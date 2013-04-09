@@ -1,0 +1,226 @@
+# Logfile created on 2013-04-10 02:05:57 +0900 by logger.rb/25413
+D, [2013-04-10T02:05:57.228597 #21588] DEBUG -- : Plugin utils/worker successfully loaded
+D, [2013-04-10T02:05:57.233221 #21588] DEBUG -- : Plugin utils/cache successfully loaded
+D, [2013-04-10T02:05:57.233816 #21588] DEBUG -- : Plugin aspects successfully loaded
+D, [2013-04-10T02:05:57.236413 #21588] DEBUG -- : Plugin utils/shell successfully loaded
+D, [2013-04-10T02:05:57.236666 #21588] DEBUG -- : Plugin aspects/documentbrowser successfully loaded
+D, [2013-04-10T02:05:57.237577 #21588] DEBUG -- : Plugin aspects/download successfully loaded
+D, [2013-04-10T02:05:57.238443 #21588] DEBUG -- : Plugin aspects/feed successfully loaded
+D, [2013-04-10T02:05:57.240108 #21588] DEBUG -- : Plugin utils/assets successfully loaded
+D, [2013-04-10T02:05:57.240614 #21588] DEBUG -- : Plugin aspects/gallery successfully loaded
+D, [2013-04-10T02:05:57.390270 #21588] DEBUG -- : Plugin utils/rouge successfully loaded
+D, [2013-04-10T02:05:57.390555 #21588] DEBUG -- : Plugin aspects/highlight successfully loaded
+D, [2013-04-10T02:05:57.392425 #21588] DEBUG -- : Plugin utils/semaphore successfully loaded
+D, [2013-04-10T02:05:57.392680 #21588] DEBUG -- : Plugin utils/image_magick successfully loaded
+D, [2013-04-10T02:05:57.392864 #21588] DEBUG -- : Plugin aspects/image successfully loaded
+D, [2013-04-10T02:05:57.393719 #21588] DEBUG -- : Plugin aspects/imageinfo successfully loaded
+D, [2013-04-10T02:05:57.394651 #21588] DEBUG -- : Plugin aspects/pageinfo successfully loaded
+D, [2013-04-10T02:05:57.395452 #21588] DEBUG -- : Plugin aspects/source successfully loaded
+D, [2013-04-10T02:05:57.396136 #21588] DEBUG -- : Plugin aspects/subpages successfully loaded
+D, [2013-04-10T02:05:57.397043 #21588] DEBUG -- : Plugin aspects/text successfully loaded
+D, [2013-04-10T02:05:57.444569 #21588] DEBUG -- : Plugin authentication/portal successfully loaded
+D, [2013-04-10T02:05:57.445382 #21588] DEBUG -- : Plugin authentication/stack successfully loaded
+D, [2013-04-10T02:05:57.454594 #21588] DEBUG -- : Plugin authentication/yamlfile successfully loaded
+D, [2013-04-10T02:05:57.455763 #21588] DEBUG -- : Plugin misc/variables successfully loaded
+D, [2013-04-10T02:05:57.456184 #21588] DEBUG -- : Plugin editor/markup successfully loaded
+D, [2013-04-10T02:05:57.456840 #21588] DEBUG -- : Plugin editor/preview successfully loaded
+D, [2013-04-10T02:05:57.458548 #21588] DEBUG -- : Plugin filters successfully loaded
+D, [2013-04-10T02:05:57.467170 #21588] DEBUG -- : Plugin filters/creole successfully loaded
+D, [2013-04-10T02:05:57.467922 #21588] DEBUG -- : Plugin filters/disposition successfully loaded
+D, [2013-04-10T02:05:57.468945 #21588] DEBUG -- : Plugin filters/editsection successfully loaded
+D, [2013-04-10T02:05:57.573796 #21588] DEBUG -- : Plugin utils/xml successfully loaded
+D, [2013-04-10T02:05:57.574063 #21588] DEBUG -- : Plugin filters/fix_image_links successfully loaded
+D, [2013-04-10T02:05:57.574685 #21588] DEBUG -- : Plugin filters/html2xml successfully loaded
+D, [2013-04-10T02:05:57.575172 #21588] DEBUG -- : Plugin filters/html_wrapper successfully loaded
+D, [2013-04-10T02:05:57.575854 #21588] DEBUG -- : Plugin filters/interwiki successfully loaded
+D, [2013-04-10T02:05:57.576511 #21588] DEBUG -- : Plugin filters/link_classifier successfully loaded
+D, [2013-04-10T02:05:57.577152 #21588] DEBUG -- : Plugin filters/markdown_nowiki successfully loaded
+D, [2013-04-10T02:05:57.648333 #21588] DEBUG -- : Plugin filters/orgmode successfully loaded
+D, [2013-04-10T02:05:57.649273 #21588] DEBUG -- : Plugin filters/rubypants successfully loaded
+D, [2013-04-10T02:05:57.650615 #21588] DEBUG -- : Plugin filters/xslt successfully loaded
+D, [2013-04-10T02:05:57.653373 #21588] DEBUG -- : Plugin filters/s5 successfully loaded
+D, [2013-04-10T02:05:59.154622 #21588] DEBUG -- : Plugin filters/tilt successfully loaded
+D, [2013-04-10T02:05:59.155762 #21588] DEBUG -- : Plugin filters/toc successfully loaded
+D, [2013-04-10T02:05:59.157853 #21588] DEBUG -- : Plugin history successfully loaded
+D, [2013-04-10T02:05:59.167660 #21588] DEBUG -- : Plugin login/basic_auth successfully loaded
+D, [2013-04-10T02:05:59.170093 #21588] DEBUG -- : Plugin login/persistent successfully loaded
+D, [2013-04-10T02:05:59.171540 #21588] DEBUG -- : Plugin misc/fancybox successfully loaded
+D, [2013-04-10T02:05:59.172077 #21588] DEBUG -- : Plugin misc/system successfully loaded
+D, [2013-04-10T02:05:59.173622 #21588] DEBUG -- : Plugin misc/webdav successfully loaded
+D, [2013-04-10T02:05:59.174421 #21588] DEBUG -- : Plugin repositories/git_grep successfully loaded
+D, [2013-04-10T02:05:59.226130 #21588] DEBUG -- : Plugin repositories/gitrb_repository successfully loaded
+D, [2013-04-10T02:05:59.251067 #21588] DEBUG -- : Plugin repositories/rugged_repository successfully loaded
+D, [2013-04-10T02:05:59.251933 #21588] DEBUG -- : Plugin security/acl successfully loaded
+D, [2013-04-10T02:05:59.255260 #21588] DEBUG -- : Plugin table successfully loaded
+D, [2013-04-10T02:05:59.258066 #21588] DEBUG -- : Plugin tags successfully loaded
+D, [2013-04-10T02:05:59.258614 #21588] DEBUG -- : Plugin tags/code successfully loaded
+D, [2013-04-10T02:05:59.259207 #21588] DEBUG -- : Plugin tags/footnotes successfully loaded
+D, [2013-04-10T02:05:59.278055 #21588] DEBUG -- : Plugin tags/gist successfully loaded
+D, [2013-04-10T02:05:59.280392 #21588] DEBUG -- : Plugin tags/html successfully loaded
+D, [2013-04-10T02:05:59.281090 #21588] DEBUG -- : Plugin tags/include successfully loaded
+D, [2013-04-10T02:05:59.282678 #21588] DEBUG -- : Plugin tags/math successfully loaded
+D, [2013-04-10T02:05:59.283268 #21588] DEBUG -- : Plugin tags/redirect successfully loaded
+D, [2013-04-10T02:05:59.303410 #21588] DEBUG -- : Plugin tags/scripting successfully loaded
+D, [2013-04-10T02:05:59.304050 #21588] DEBUG -- : Plugin tags/sort successfully loaded
+D, [2013-04-10T02:05:59.304629 #21588] DEBUG -- : Plugin tags/tabs successfully loaded
+D, [2013-04-10T02:05:59.307103 #21588] DEBUG -- : Plugin treeview successfully loaded
+D, [2013-04-10T02:05:59.307426 #21588] DEBUG -- : Plugin aspects successfully started
+D, [2013-04-10T02:05:59.307495 #21588] DEBUG -- : Plugin utils/cache successfully started
+D, [2013-04-10T02:05:59.307631 #21588] DEBUG -- : Plugin utils/worker successfully started
+D, [2013-04-10T02:05:59.307749 #21588] DEBUG -- : Plugin aspects/documentbrowser successfully started
+D, [2013-04-10T02:05:59.307821 #21588] DEBUG -- : Plugin utils/shell successfully started
+D, [2013-04-10T02:05:59.307876 #21588] DEBUG -- : Plugin aspects/download successfully started
+D, [2013-04-10T02:05:59.307931 #21588] DEBUG -- : Plugin aspects/feed successfully started
+D, [2013-04-10T02:05:59.307984 #21588] DEBUG -- : Plugin aspects/gallery successfully started
+D, [2013-04-10T02:05:59.308038 #21588] DEBUG -- : Plugin utils/assets successfully started
+D, [2013-04-10T02:05:59.308092 #21588] DEBUG -- : Plugin aspects/highlight successfully started
+D, [2013-04-10T02:05:59.308146 #21588] DEBUG -- : Plugin utils/rouge successfully started
+D, [2013-04-10T02:05:59.308199 #21588] DEBUG -- : Plugin aspects/image successfully started
+D, [2013-04-10T02:05:59.308253 #21588] DEBUG -- : Plugin utils/image_magick successfully started
+D, [2013-04-10T02:05:59.308306 #21588] DEBUG -- : Plugin utils/semaphore successfully started
+D, [2013-04-10T02:05:59.308359 #21588] DEBUG -- : Plugin aspects/imageinfo successfully started
+D, [2013-04-10T02:05:59.308413 #21588] DEBUG -- : Plugin aspects/pageinfo successfully started
+D, [2013-04-10T02:05:59.308466 #21588] DEBUG -- : Plugin aspects/source successfully started
+D, [2013-04-10T02:05:59.308519 #21588] DEBUG -- : Plugin aspects/subpages successfully started
+D, [2013-04-10T02:05:59.308584 #21588] DEBUG -- : Plugin aspects/text successfully started
+D, [2013-04-10T02:05:59.308644 #21588] DEBUG -- : Plugin authentication/portal successfully started
+D, [2013-04-10T02:05:59.308704 #21588] DEBUG -- : Plugin authentication/stack successfully started
+D, [2013-04-10T02:05:59.308771 #21588] DEBUG -- : Plugin authentication/yamlfile successfully started
+D, [2013-04-10T02:05:59.308825 #21588] DEBUG -- : Plugin editor/markup successfully started
+D, [2013-04-10T02:05:59.308894 #21588] DEBUG -- : Plugin misc/variables successfully started
+D, [2013-04-10T02:05:59.308950 #21588] DEBUG -- : Plugin editor/preview successfully started
+D, [2013-04-10T02:05:59.310503 #21588] DEBUG -- : Filter aspect 'page' successfully created
+D, [2013-04-10T02:05:59.312224 #21588] DEBUG -- : Filter aspect 's5' successfully created
+D, [2013-04-10T02:05:59.314559 #21588] DEBUG -- : Filter aspect 'latex' successfully created
+D, [2013-04-10T02:05:59.315031 #21588] DEBUG -- : Filter aspect 'page' successfully created
+D, [2013-04-10T02:05:59.316349 #21588] DEBUG -- : Filter aspect 's5' successfully created
+D, [2013-04-10T02:05:59.317941 #21588] DEBUG -- : Filter aspect 'latex' successfully created
+D, [2013-04-10T02:05:59.318545 #21588] DEBUG -- : Filter aspect 'page' successfully created
+D, [2013-04-10T02:05:59.336506 #21588] DEBUG -- : Filter aspect 's5' successfully created
+D, [2013-04-10T02:05:59.338519 #21588] DEBUG -- : Filter aspect 'latex' successfully created
+D, [2013-04-10T02:05:59.339129 #21588] DEBUG -- : Filter aspect 'page' successfully created
+D, [2013-04-10T02:05:59.340828 #21588] DEBUG -- : Filter aspect 's5' successfully created
+D, [2013-04-10T02:05:59.342647 #21588] DEBUG -- : Filter aspect 'latex' successfully created
+D, [2013-04-10T02:05:59.343006 #21588] DEBUG -- : Filter aspect 'page' successfully created
+D, [2013-04-10T02:05:59.344380 #21588] DEBUG -- : Filter aspect 's5' successfully created
+D, [2013-04-10T02:05:59.346175 #21588] DEBUG -- : Filter aspect 'latex' successfully created
+W, [2013-04-10T02:05:59.346441 #21588]  WARN -- : Aspect 'calendar' not created because mandatory filter 'remind' is not available
+D, [2013-04-10T02:05:59.346508 #21588] DEBUG -- : Plugin filters successfully started
+D, [2013-04-10T02:05:59.346566 #21588] DEBUG -- : Plugin filters/creole successfully started
+D, [2013-04-10T02:05:59.346621 #21588] DEBUG -- : Plugin filters/disposition successfully started
+D, [2013-04-10T02:05:59.346675 #21588] DEBUG -- : Plugin filters/editsection successfully started
+D, [2013-04-10T02:05:59.346728 #21588] DEBUG -- : Plugin filters/fix_image_links successfully started
+D, [2013-04-10T02:05:59.346782 #21588] DEBUG -- : Plugin utils/xml successfully started
+D, [2013-04-10T02:05:59.346834 #21588] DEBUG -- : Plugin filters/html2xml successfully started
+D, [2013-04-10T02:05:59.346887 #21588] DEBUG -- : Plugin filters/html_wrapper successfully started
+D, [2013-04-10T02:05:59.346940 #21588] DEBUG -- : Plugin filters/interwiki successfully started
+D, [2013-04-10T02:05:59.346993 #21588] DEBUG -- : Plugin filters/link_classifier successfully started
+D, [2013-04-10T02:05:59.347047 #21588] DEBUG -- : Plugin filters/markdown_nowiki successfully started
+D, [2013-04-10T02:05:59.347100 #21588] DEBUG -- : Plugin filters/orgmode successfully started
+D, [2013-04-10T02:05:59.347154 #21588] DEBUG -- : Plugin filters/rubypants successfully started
+D, [2013-04-10T02:05:59.347207 #21588] DEBUG -- : Plugin filters/s5 successfully started
+D, [2013-04-10T02:05:59.347260 #21588] DEBUG -- : Plugin filters/xslt successfully started
+D, [2013-04-10T02:05:59.347313 #21588] DEBUG -- : Plugin filters/tilt successfully started
+D, [2013-04-10T02:05:59.347380 #21588] DEBUG -- : Plugin filters/toc successfully started
+D, [2013-04-10T02:05:59.347439 #21588] DEBUG -- : Plugin history successfully started
+D, [2013-04-10T02:05:59.347519 #21588] DEBUG -- : Plugin login/basic_auth successfully started
+D, [2013-04-10T02:05:59.347578 #21588] DEBUG -- : Plugin login/persistent successfully started
+D, [2013-04-10T02:05:59.347637 #21588] DEBUG -- : Plugin misc/fancybox successfully started
+D, [2013-04-10T02:05:59.347696 #21588] DEBUG -- : Plugin misc/system successfully started
+D, [2013-04-10T02:05:59.347756 #21588] DEBUG -- : Plugin misc/webdav successfully started
+D, [2013-04-10T02:05:59.347815 #21588] DEBUG -- : Plugin repositories/git_grep successfully started
+D, [2013-04-10T02:05:59.347875 #21588] DEBUG -- : Plugin repositories/gitrb_repository successfully started
+D, [2013-04-10T02:05:59.347935 #21588] DEBUG -- : Plugin repositories/rugged_repository successfully started
+D, [2013-04-10T02:05:59.348018 #21588] DEBUG -- : Plugin security/acl successfully started
+D, [2013-04-10T02:05:59.348080 #21588] DEBUG -- : Plugin table successfully started
+D, [2013-04-10T02:05:59.348139 #21588] DEBUG -- : Plugin tags successfully started
+D, [2013-04-10T02:05:59.348197 #21588] DEBUG -- : Plugin tags/code successfully started
+D, [2013-04-10T02:05:59.348255 #21588] DEBUG -- : Plugin tags/footnotes successfully started
+D, [2013-04-10T02:05:59.348314 #21588] DEBUG -- : Plugin tags/gist successfully started
+D, [2013-04-10T02:05:59.348379 #21588] DEBUG -- : Plugin tags/html successfully started
+D, [2013-04-10T02:05:59.348432 #21588] DEBUG -- : Plugin tags/include successfully started
+D, [2013-04-10T02:05:59.348496 #21588] DEBUG -- : Plugin tags/math successfully started
+D, [2013-04-10T02:05:59.348554 #21588] DEBUG -- : Plugin tags/redirect successfully started
+D, [2013-04-10T02:05:59.348612 #21588] DEBUG -- : Plugin tags/scripting successfully started
+D, [2013-04-10T02:05:59.348675 #21588] DEBUG -- : Plugin tags/sort successfully started
+D, [2013-04-10T02:05:59.348728 #21588] DEBUG -- : Plugin tags/tabs successfully started
+D, [2013-04-10T02:05:59.348781 #21588] DEBUG -- : Plugin treeview successfully started
+D, [2013-04-10T02:05:59.348838 #21588] DEBUG -- : GET
+D, [2013-04-10T02:05:59.348898 #21588] DEBUG -- : /login -> /^\/login$/
+D, [2013-04-10T02:05:59.348953 #21588] DEBUG -- : /logout -> /^\/logout$/
+D, [2013-04-10T02:05:59.349006 #21588] DEBUG -- : /profile -> /^\/profile$/
+D, [2013-04-10T02:05:59.349060 #21588] DEBUG -- : /move/:path -> /^\/move\/([^\s](?:.*[^\s]+)?)$/
+D, [2013-04-10T02:05:59.349114 #21588] DEBUG -- : /delete/:path -> /^\/delete\/([^\s](?:.*[^\s]+)?)$/
+D, [2013-04-10T02:05:59.349168 #21588] DEBUG -- : /edit(/(:path)) -> /^\/edit(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.349222 #21588] DEBUG -- : /new(/(:path)) -> /^\/new(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.349278 #21588] DEBUG -- : /version/:version(/(:path)) -> /^\/version\/([^\/?&#.]+)(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.349334 #21588] DEBUG -- : /_/assets(-:version)/assets.:type -> /^\/_\/assets(?:\-([^\/?&#.]+))?\/assets\.(js|css)$/
+D, [2013-04-10T02:05:59.349390 #21588] DEBUG -- : /_/assets(-:version)/:name -> /^\/_\/assets(?:\-([^\/?&#.]+))?\/(.*)$/
+D, [2013-04-10T02:05:59.349447 #21588] DEBUG -- : /compare/:versions(/(:path)) -> /^\/compare\/((?:\w+)\.{2,3}(?:\w+))(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.349502 #21588] DEBUG -- : /compare(/(:path)) -> /^\/compare(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.349558 #21588] DEBUG -- : /changes/:version(/(:path)) -> /^\/changes\/([^\/?&#.]+)(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.349623 #21588] DEBUG -- : /history(/(:path)) -> /^\/history(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.349683 #21588] DEBUG -- : /system -> /^\/system$/
+D, [2013-04-10T02:05:59.349745 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.349810 #21588] DEBUG -- : /search -> /^\/search$/
+D, [2013-04-10T02:05:59.349864 #21588] DEBUG -- : /_/blahtex/:name -> /^\/_\/blahtex\/((?-mix:\w+\.\w+))$/
+D, [2013-04-10T02:05:59.349919 #21588] DEBUG -- : /(:path) -> /^\/(?:([^\s](?:.*[^\s]+)?))?$/
+D, [2013-04-10T02:05:59.349970 #21588] DEBUG -- : HEAD
+D, [2013-04-10T02:05:59.350024 #21588] DEBUG -- : /login -> /^\/login$/
+D, [2013-04-10T02:05:59.350078 #21588] DEBUG -- : /logout -> /^\/logout$/
+D, [2013-04-10T02:05:59.350132 #21588] DEBUG -- : /profile -> /^\/profile$/
+D, [2013-04-10T02:05:59.350186 #21588] DEBUG -- : /move/:path -> /^\/move\/([^\s](?:.*[^\s]+)?)$/
+D, [2013-04-10T02:05:59.350240 #21588] DEBUG -- : /delete/:path -> /^\/delete\/([^\s](?:.*[^\s]+)?)$/
+D, [2013-04-10T02:05:59.350294 #21588] DEBUG -- : /edit(/(:path)) -> /^\/edit(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.350348 #21588] DEBUG -- : /new(/(:path)) -> /^\/new(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.350414 #21588] DEBUG -- : /version/:version(/(:path)) -> /^\/version\/([^\/?&#.]+)(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.350472 #21588] DEBUG -- : /_/assets(-:version)/assets.:type -> /^\/_\/assets(?:\-([^\/?&#.]+))?\/assets\.(js|css)$/
+D, [2013-04-10T02:05:59.350528 #21588] DEBUG -- : /_/assets(-:version)/:name -> /^\/_\/assets(?:\-([^\/?&#.]+))?\/(.*)$/
+D, [2013-04-10T02:05:59.350586 #21588] DEBUG -- : /compare/:versions(/(:path)) -> /^\/compare\/((?:\w+)\.{2,3}(?:\w+))(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.350641 #21588] DEBUG -- : /compare(/(:path)) -> /^\/compare(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.350708 #21588] DEBUG -- : /changes/:version(/(:path)) -> /^\/changes\/([^\/?&#.]+)(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.350769 #21588] DEBUG -- : /history(/(:path)) -> /^\/history(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.350827 #21588] DEBUG -- : /system -> /^\/system$/
+D, [2013-04-10T02:05:59.350888 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.351052 #21588] DEBUG -- : /search -> /^\/search$/
+D, [2013-04-10T02:05:59.351122 #21588] DEBUG -- : /_/blahtex/:name -> /^\/_\/blahtex\/((?-mix:\w+\.\w+))$/
+D, [2013-04-10T02:05:59.351176 #21588] DEBUG -- : /(:path) -> /^\/(?:([^\s](?:.*[^\s]+)?))?$/
+D, [2013-04-10T02:05:59.351226 #21588] DEBUG -- : POST
+D, [2013-04-10T02:05:59.351280 #21588] DEBUG -- : /login -> /^\/login$/
+D, [2013-04-10T02:05:59.351333 #21588] DEBUG -- : /signup -> /^\/signup$/
+D, [2013-04-10T02:05:59.351385 #21588] DEBUG -- : /profile -> /^\/profile$/
+D, [2013-04-10T02:05:59.351438 #21588] DEBUG -- : /move/:path -> /^\/move\/([^\s](?:.*[^\s]+)?)$/
+D, [2013-04-10T02:05:59.351491 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.351544 #21588] DEBUG -- : /(:path) -> /^\/(?:([^\s](?:.*[^\s]+)?))?$/
+D, [2013-04-10T02:05:59.351593 #21588] DEBUG -- : DELETE
+D, [2013-04-10T02:05:59.351648 #21588] DEBUG -- : /:path -> /^\/([^\s](?:.*[^\s]+)?)$/
+D, [2013-04-10T02:05:59.351699 #21588] DEBUG -- : PUT
+D, [2013-04-10T02:05:59.351755 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.351806 #21588] DEBUG -- : PROPFIND
+D, [2013-04-10T02:05:59.351874 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.351932 #21588] DEBUG -- : PROPPATCH
+D, [2013-04-10T02:05:59.351994 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.352055 #21588] DEBUG -- : MKCOL
+D, [2013-04-10T02:05:59.352111 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.352162 #21588] DEBUG -- : COPY
+D, [2013-04-10T02:05:59.352218 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.352269 #21588] DEBUG -- : MOVE
+D, [2013-04-10T02:05:59.352325 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.352376 #21588] DEBUG -- : LOCK
+D, [2013-04-10T02:05:59.352432 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.352484 #21588] DEBUG -- : UNLOCK
+D, [2013-04-10T02:05:59.352539 #21588] DEBUG -- : /webdav(/(:path)) -> /^\/webdav(?:\/(?:([^\s](?:.*[^\s]+)?))?)?$/
+D, [2013-04-10T02:05:59.352722 #21588] DEBUG -- : Running script initializer /Users/isaac/repo/olelo/config/initializers/00-mime_types.rb
+D, [2013-04-10T02:05:59.353080 #21588] DEBUG -- : Running script initializer /Users/isaac/repo/olelo/config/initializers/01-slim.rb
+I, [2013-04-10T02:05:59.408194 #21588]  INFO -- : Olelo started in development mode
+I, [2013-04-10T02:07:46.205666 #21588]  INFO -- : Opening git repository: /Users/isaac/repo/olelo/.wiki/repository
+127.0.0.1 - - [10/Apr/2013 02:07:46] "GET /tabler HTTP/1.1" 200 - 0.2802
+127.0.0.1 - - [10/Apr/2013 02:07:46] "GET /_/assets-f74586747ed258be94622ced557251c6/assets.css HTTP/1.1" 200 - 0.0057
+127.0.0.1 - - [10/Apr/2013 02:07:46] "GET /_/assets-c4364adf8d72983c48f4dac6c579fe32/assets.js HTTP/1.1" 200 - 0.0253
+127.0.0.1 - - [10/Apr/2013 02:07:47] "GET /_/assets-f74586747ed258be94622ced557251c6/treeview/images/menu.png HTTP/1.1" 200 - 0.0243
+I, [2013-04-10T02:07:48.908014 #21588]  INFO -- : Opening git repository: /Users/isaac/repo/olelo/.wiki/repository
+127.0.0.1 - - [10/Apr/2013 02:07:48] "GET /?aspect=treeview HTTP/1.1" 200 - 0.0081
+127.0.0.1 - - [10/Apr/2013 02:07:50] "GET /tabler HTTP/1.1" 200 - 0.0460
+127.0.0.1 - - [10/Apr/2013 02:07:50] "GET /_/assets-f74586747ed258be94622ced557251c6/assets.css HTTP/1.1" 200 - 0.0495
+127.0.0.1 - - [10/Apr/2013 02:07:50] "GET /_/assets-c4364adf8d72983c48f4dac6c579fe32/assets.js HTTP/1.1" 200 - 0.0476
+127.0.0.1 - - [10/Apr/2013 02:07:52] "GET /?aspect=treeview HTTP/1.1" 200 - 0.0052

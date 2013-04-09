@@ -1,3 +1,489 @@
+/*
+    json2.js
+    2012-10-08
+
+    Public Domain.
+
+    NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+
+    See http://www.JSON.org/js.html
+
+
+    This code should be minified before deployment.
+    See http://javascript.crockford.com/jsmin.html
+
+    USE YOUR OWN COPY. IT IS EXTREMELY UNWISE TO LOAD CODE FROM SERVERS YOU DO
+    NOT CONTROL.
+
+
+    This file creates a global JSON object containing two methods: stringify
+    and parse.
+
+        JSON.stringify(value, replacer, space)
+            value       any JavaScript value, usually an object or array.
+
+            replacer    an optional parameter that determines how object
+                        values are stringified for objects. It can be a
+                        function or an array of strings.
+
+            space       an optional parameter that specifies the indentation
+                        of nested structures. If it is omitted, the text will
+                        be packed without extra whitespace. If it is a number,
+                        it will specify the number of spaces to indent at each
+                        level. If it is a string (such as '\t' or '&nbsp;'),
+                        it contains the characters used to indent at each level.
+
+            This method produces a JSON text from a JavaScript value.
+
+            When an object value is found, if the object contains a toJSON
+            method, its toJSON method will be called and the result will be
+            stringified. A toJSON method does not serialize: it returns the
+            value represented by the name/value pair that should be serialized,
+            or undefined if nothing should be serialized. The toJSON method
+            will be passed the key associated with the value, and this will be
+            bound to the value
+
+            For example, this would serialize Dates as ISO strings.
+
+                Date.prototype.toJSON = function (key) {
+                    function f(n) {
+                        // Format integers to have at least two digits.
+                        return n < 10 ? '0' + n : n;
+                    }
+
+                    return this.getUTCFullYear()   + '-' +
+                         f(this.getUTCMonth() + 1) + '-' +
+                         f(this.getUTCDate())      + 'T' +
+                         f(this.getUTCHours())     + ':' +
+                         f(this.getUTCMinutes())   + ':' +
+                         f(this.getUTCSeconds())   + 'Z';
+                };
+
+            You can provide an optional replacer method. It will be passed the
+            key and value of each member, with this bound to the containing
+            object. The value that is returned from your method will be
+            serialized. If your method returns undefined, then the member will
+            be excluded from the serialization.
+
+            If the replacer parameter is an array of strings, then it will be
+            used to select the members to be serialized. It filters the results
+            such that only members with keys listed in the replacer array are
+            stringified.
+
+            Values that do not have JSON representations, such as undefined or
+            functions, will not be serialized. Such values in objects will be
+            dropped; in arrays they will be replaced with null. You can use
+            a replacer function to replace those with JSON values.
+            JSON.stringify(undefined) returns undefined.
+
+            The optional space parameter produces a stringification of the
+            value that is filled with line breaks and indentation to make it
+            easier to read.
+
+            If the space parameter is a non-empty string, then that string will
+            be used for indentation. If the space parameter is a number, then
+            the indentation will be that many spaces.
+
+            Example:
+
+            text = JSON.stringify(['e', {pluribus: 'unum'}]);
+            // text is '["e",{"pluribus":"unum"}]'
+
+
+            text = JSON.stringify(['e', {pluribus: 'unum'}], null, '\t');
+            // text is '[\n\t"e",\n\t{\n\t\t"pluribus": "unum"\n\t}\n]'
+
+            text = JSON.stringify([new Date()], function (key, value) {
+                return this[key] instanceof Date ?
+                    'Date(' + this[key] + ')' : value;
+            });
+            // text is '["Date(---current time---)"]'
+
+
+        JSON.parse(text, reviver)
+            This method parses a JSON text to produce an object or array.
+            It can throw a SyntaxError exception.
+
+            The optional reviver parameter is a function that can filter and
+            transform the results. It receives each of the keys and values,
+            and its return value is used instead of the original value.
+            If it returns what it received, then the structure is not modified.
+            If it returns undefined then the member is deleted.
+
+            Example:
+
+            // Parse the text. Values that look like ISO date strings will
+            // be converted to Date objects.
+
+            myData = JSON.parse(text, function (key, value) {
+                var a;
+                if (typeof value === 'string') {
+                    a =
+/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+                    if (a) {
+                        return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4],
+                            +a[5], +a[6]));
+                    }
+                }
+                return value;
+            });
+
+            myData = JSON.parse('["Date(09/09/2001)"]', function (key, value) {
+                var d;
+                if (typeof value === 'string' &&
+                        value.slice(0, 5) === 'Date(' &&
+                        value.slice(-1) === ')') {
+                    d = new Date(value.slice(5, -1));
+                    if (d) {
+                        return d;
+                    }
+                }
+                return value;
+            });
+
+
+    This is a reference implementation. You are free to copy, modify, or
+    redistribute.
+*/
+
+/*jslint evil: true, regexp: true */
+
+/*members "", "\b", "\t", "\n", "\f", "\r", "\"", JSON, "\\", apply,
+    call, charCodeAt, getUTCDate, getUTCFullYear, getUTCHours,
+    getUTCMinutes, getUTCMonth, getUTCSeconds, hasOwnProperty, join,
+    lastIndex, length, parse, prototype, push, replace, slice, stringify,
+    test, toJSON, toString, valueOf
+*/
+
+
+// Create a JSON object only if one does not already exist. We create the
+// methods in a closure to avoid creating global variables.
+
+if (typeof JSON !== 'object') {
+    JSON = {};
+}
+
+(function () {
+    'use strict';
+
+    function f(n) {
+        // Format integers to have at least two digits.
+        return n < 10 ? '0' + n : n;
+    }
+
+    if (typeof Date.prototype.toJSON !== 'function') {
+
+        Date.prototype.toJSON = function (key) {
+
+            return isFinite(this.valueOf())
+                ? this.getUTCFullYear()     + '-' +
+                    f(this.getUTCMonth() + 1) + '-' +
+                    f(this.getUTCDate())      + 'T' +
+                    f(this.getUTCHours())     + ':' +
+                    f(this.getUTCMinutes())   + ':' +
+                    f(this.getUTCSeconds())   + 'Z'
+                : null;
+        };
+
+        String.prototype.toJSON      =
+            Number.prototype.toJSON  =
+            Boolean.prototype.toJSON = function (key) {
+                return this.valueOf();
+            };
+    }
+
+    var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+        escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+        gap,
+        indent,
+        meta = {    // table of character substitutions
+            '\b': '\\b',
+            '\t': '\\t',
+            '\n': '\\n',
+            '\f': '\\f',
+            '\r': '\\r',
+            '"' : '\\"',
+            '\\': '\\\\'
+        },
+        rep;
+
+
+    function quote(string) {
+
+// If the string contains no control characters, no quote characters, and no
+// backslash characters, then we can safely slap some quotes around it.
+// Otherwise we must also replace the offending characters with safe escape
+// sequences.
+
+        escapable.lastIndex = 0;
+        return escapable.test(string) ? '"' + string.replace(escapable, function (a) {
+            var c = meta[a];
+            return typeof c === 'string'
+                ? c
+                : '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+        }) + '"' : '"' + string + '"';
+    }
+
+
+    function str(key, holder) {
+
+// Produce a string from holder[key].
+
+        var i,          // The loop counter.
+            k,          // The member key.
+            v,          // The member value.
+            length,
+            mind = gap,
+            partial,
+            value = holder[key];
+
+// If the value has a toJSON method, call it to obtain a replacement value.
+
+        if (value && typeof value === 'object' &&
+                typeof value.toJSON === 'function') {
+            value = value.toJSON(key);
+        }
+
+// If we were called with a replacer function, then call the replacer to
+// obtain a replacement value.
+
+        if (typeof rep === 'function') {
+            value = rep.call(holder, key, value);
+        }
+
+// What happens next depends on the value's type.
+
+        switch (typeof value) {
+        case 'string':
+            return quote(value);
+
+        case 'number':
+
+// JSON numbers must be finite. Encode non-finite numbers as null.
+
+            return isFinite(value) ? String(value) : 'null';
+
+        case 'boolean':
+        case 'null':
+
+// If the value is a boolean or null, convert it to a string. Note:
+// typeof null does not produce 'null'. The case is included here in
+// the remote chance that this gets fixed someday.
+
+            return String(value);
+
+// If the type is 'object', we might be dealing with an object or an array or
+// null.
+
+        case 'object':
+
+// Due to a specification blunder in ECMAScript, typeof null is 'object',
+// so watch out for that case.
+
+            if (!value) {
+                return 'null';
+            }
+
+// Make an array to hold the partial results of stringifying this object value.
+
+            gap += indent;
+            partial = [];
+
+// Is the value an array?
+
+            if (Object.prototype.toString.apply(value) === '[object Array]') {
+
+// The value is an array. Stringify every element. Use null as a placeholder
+// for non-JSON values.
+
+                length = value.length;
+                for (i = 0; i < length; i += 1) {
+                    partial[i] = str(i, value) || 'null';
+                }
+
+// Join all of the elements together, separated with commas, and wrap them in
+// brackets.
+
+                v = partial.length === 0
+                    ? '[]'
+                    : gap
+                    ? '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']'
+                    : '[' + partial.join(',') + ']';
+                gap = mind;
+                return v;
+            }
+
+// If the replacer is an array, use it to select the members to be stringified.
+
+            if (rep && typeof rep === 'object') {
+                length = rep.length;
+                for (i = 0; i < length; i += 1) {
+                    if (typeof rep[i] === 'string') {
+                        k = rep[i];
+                        v = str(k, value);
+                        if (v) {
+                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                        }
+                    }
+                }
+            } else {
+
+// Otherwise, iterate through all of the keys in the object.
+
+                for (k in value) {
+                    if (Object.prototype.hasOwnProperty.call(value, k)) {
+                        v = str(k, value);
+                        if (v) {
+                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                        }
+                    }
+                }
+            }
+
+// Join all of the member texts together, separated with commas,
+// and wrap them in braces.
+
+            v = partial.length === 0
+                ? '{}'
+                : gap
+                ? '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}'
+                : '{' + partial.join(',') + '}';
+            gap = mind;
+            return v;
+        }
+    }
+
+// If the JSON object does not yet have a stringify method, give it one.
+
+    if (typeof JSON.stringify !== 'function') {
+        JSON.stringify = function (value, replacer, space) {
+
+// The stringify method takes a value and an optional replacer, and an optional
+// space parameter, and returns a JSON text. The replacer can be a function
+// that can replace values, or an array of strings that will select the keys.
+// A default replacer method can be provided. Use of the space parameter can
+// produce text that is more easily readable.
+
+            var i;
+            gap = '';
+            indent = '';
+
+// If the space parameter is a number, make an indent string containing that
+// many spaces.
+
+            if (typeof space === 'number') {
+                for (i = 0; i < space; i += 1) {
+                    indent += ' ';
+                }
+
+// If the space parameter is a string, it will be used as the indent string.
+
+            } else if (typeof space === 'string') {
+                indent = space;
+            }
+
+// If there is a replacer, it must be a function or an array.
+// Otherwise, throw an error.
+
+            rep = replacer;
+            if (replacer && typeof replacer !== 'function' &&
+                    (typeof replacer !== 'object' ||
+                    typeof replacer.length !== 'number')) {
+                throw new Error('JSON.stringify');
+            }
+
+// Make a fake root object containing our value under the key of ''.
+// Return the result of stringifying the value.
+
+            return str('', {'': value});
+        };
+    }
+
+
+// If the JSON object does not yet have a parse method, give it one.
+
+    if (typeof JSON.parse !== 'function') {
+        JSON.parse = function (text, reviver) {
+
+// The parse method takes a text and an optional reviver function, and returns
+// a JavaScript value if the text is a valid JSON text.
+
+            var j;
+
+            function walk(holder, key) {
+
+// The walk method is used to recursively walk the resulting structure so
+// that modifications can be made.
+
+                var k, v, value = holder[key];
+                if (value && typeof value === 'object') {
+                    for (k in value) {
+                        if (Object.prototype.hasOwnProperty.call(value, k)) {
+                            v = walk(value, k);
+                            if (v !== undefined) {
+                                value[k] = v;
+                            } else {
+                                delete value[k];
+                            }
+                        }
+                    }
+                }
+                return reviver.call(holder, key, value);
+            }
+
+
+// Parsing happens in four stages. In the first stage, we replace certain
+// Unicode characters with escape sequences. JavaScript handles many characters
+// incorrectly, either silently deleting them, or treating them as line endings.
+
+            text = String(text);
+            cx.lastIndex = 0;
+            if (cx.test(text)) {
+                text = text.replace(cx, function (a) {
+                    return '\\u' +
+                        ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+                });
+            }
+
+// In the second stage, we run the text against regular expressions that look
+// for non-JSON patterns. We are especially concerned with '()' and 'new'
+// because they can cause invocation, and '=' because it can cause mutation.
+// But just to be safe, we want to reject all unexpected forms.
+
+// We split the second stage into 4 regexp operations in order to work around
+// crippling inefficiencies in IE's and Safari's regexp engines. First we
+// replace the JSON backslash pairs with '@' (a non-JSON character). Second, we
+// replace all simple value tokens with ']' characters. Third, we delete all
+// open brackets that follow a colon or comma or that begin the text. Finally,
+// we look to see that the remaining characters are only whitespace or ']' or
+// ',' or ':' or '{' or '}'. If that is so, then the text is safe for eval.
+
+            if (/^[\],:{}\s]*$/
+                    .test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+                        .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
+                        .replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+
+// In the third stage we use the eval function to compile the text into a
+// JavaScript structure. The '{' operator is subject to a syntactic ambiguity
+// in JavaScript: it can begin a block or an object literal. We wrap the text
+// in parens to eliminate the ambiguity.
+
+                j = eval('(' + text + ')');
+
+// In the optional fourth stage, we recursively walk the new structure, passing
+// each name/value pair to a reviver function for possible transformation.
+
+                return typeof reviver === 'function'
+                    ? walk({'': j}, '')
+                    : j;
+            }
+
+// If the text is not JSON parseable, then a SyntaxError is thrown.
+
+            throw new SyntaxError('JSON.parse');
+        };
+    }
+}());
 /*!
  * jQuery JavaScript Library v1.9.1
  * http://jquery.com/
@@ -9594,4 +10080,5549 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 	define( "jquery", [], function () { return jQuery; } );
 }
 
-})( window );
+})( window );/*!
+ * jQuery Migrate - v1.1.0 - 2013-01-31
+ * https://github.com/jquery/jquery-migrate
+ * Copyright 2005, 2013 jQuery Foundation, Inc. and other contributors; Licensed MIT
+ */
+(function( jQuery, window, undefined ) {
+"use strict";
+
+
+var warnedAbout = {};
+
+// List of warnings already given; public read only
+jQuery.migrateWarnings = [];
+
+// Set to true to prevent console output; migrateWarnings still maintained
+// jQuery.migrateMute = false;
+
+// Show a message on the console so devs know we're active
+if ( !jQuery.migrateMute && window.console && console.log ) {
+	console.log("JQMIGRATE: Logging is active");
+}
+
+// Set to false to disable traces that appear with warnings
+if ( jQuery.migrateTrace === undefined ) {
+	jQuery.migrateTrace = true;
+}
+
+// Forget any warnings we've already given; public
+jQuery.migrateReset = function() {
+	warnedAbout = {};
+	jQuery.migrateWarnings.length = 0;
+};
+
+function migrateWarn( msg) {
+	if ( !warnedAbout[ msg ] ) {
+		warnedAbout[ msg ] = true;
+		jQuery.migrateWarnings.push( msg );
+		if ( window.console && console.warn && !jQuery.migrateMute ) {
+			console.warn( "JQMIGRATE: " + msg );
+			if ( jQuery.migrateTrace && console.trace ) {
+				console.trace();
+			}
+		}
+	}
+}
+
+function migrateWarnProp( obj, prop, value, msg ) {
+	if ( Object.defineProperty ) {
+		// On ES5 browsers (non-oldIE), warn if the code tries to get prop;
+		// allow property to be overwritten in case some other plugin wants it
+		try {
+			Object.defineProperty( obj, prop, {
+				configurable: true,
+				enumerable: true,
+				get: function() {
+					migrateWarn( msg );
+					return value;
+				},
+				set: function( newValue ) {
+					migrateWarn( msg );
+					value = newValue;
+				}
+			});
+			return;
+		} catch( err ) {
+			// IE8 is a dope about Object.defineProperty, can't warn there
+		}
+	}
+
+	// Non-ES5 (or broken) browser; just set the property
+	jQuery._definePropertyBroken = true;
+	obj[ prop ] = value;
+}
+
+if ( document.compatMode === "BackCompat" ) {
+	// jQuery has never supported or tested Quirks Mode
+	migrateWarn( "jQuery is not compatible with Quirks Mode" );
+}
+
+
+var attrFn = {},
+	oldAttr = jQuery.attr,
+	valueAttrGet = jQuery.attrHooks.value && jQuery.attrHooks.value.get ||
+		function() { return null; },
+	valueAttrSet = jQuery.attrHooks.value && jQuery.attrHooks.value.set ||
+		function() { return undefined; },
+	rnoType = /^(?:input|button)$/i,
+	rnoAttrNodeType = /^[238]$/,
+	rboolean = /^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i,
+	ruseDefault = /^(?:checked|selected)$/i;
+
+// jQuery.attrFn
+migrateWarnProp( jQuery, "attrFn", attrFn, "jQuery.attrFn is deprecated" );
+
+jQuery.attr = function( elem, name, value, pass ) {
+	var lowerName = name.toLowerCase(),
+		nType = elem && elem.nodeType;
+
+	// Since pass is used internally, we only warn and shim for new jQuery
+	// versions where there isn't a pass arg in the formal params
+	if ( pass && oldAttr.length < 4 ) {
+		migrateWarn("jQuery.fn.attr( props, pass ) is deprecated");
+		if ( elem && !rnoAttrNodeType.test( nType ) && jQuery.isFunction( jQuery.fn[ name ] ) ) {
+			return jQuery( elem )[ name ]( value );
+		}
+	}
+
+	// Warn if user tries to set `type`, since it breaks on IE 6/7/8; by checking
+	// for disconnected elements we don't warn on $( "<button>", { type: "button" } ).
+	if ( name === "type" && value !== undefined && rnoType.test( elem.nodeName ) && elem.parentNode ) {
+		migrateWarn("Can't change the 'type' of an input or button in IE 6/7/8");
+	}
+
+	// Restore boolHook for boolean property/attribute synchronization
+	if ( !jQuery.attrHooks[ lowerName ] && rboolean.test( lowerName ) ) {
+		jQuery.attrHooks[ lowerName ] = {
+			get: function( elem, name ) {
+				// Align boolean attributes with corresponding properties
+				// Fall back to attribute presence where some booleans are not supported
+				var attrNode,
+					property = jQuery.prop( elem, name );
+				return property === true || typeof property !== "boolean" &&
+					( attrNode = elem.getAttributeNode(name) ) && attrNode.nodeValue !== false ?
+
+					name.toLowerCase() :
+					undefined;
+			},
+			set: function( elem, value, name ) {
+				var propName;
+				if ( value === false ) {
+					// Remove boolean attributes when set to false
+					jQuery.removeAttr( elem, name );
+				} else {
+					// value is true since we know at this point it's type boolean and not false
+					// Set boolean attributes to the same name and set the DOM property
+					propName = jQuery.propFix[ name ] || name;
+					if ( propName in elem ) {
+						// Only set the IDL specifically if it already exists on the element
+						elem[ propName ] = true;
+					}
+
+					elem.setAttribute( name, name.toLowerCase() );
+				}
+				return name;
+			}
+		};
+
+		// Warn only for attributes that can remain distinct from their properties post-1.9
+		if ( ruseDefault.test( lowerName ) ) {
+			migrateWarn( "jQuery.fn.attr('" + lowerName + "') may use property instead of attribute" );
+		}
+	}
+
+	return oldAttr.call( jQuery, elem, name, value );
+};
+
+// attrHooks: value
+jQuery.attrHooks.value = {
+	get: function( elem, name ) {
+		var nodeName = ( elem.nodeName || "" ).toLowerCase();
+		if ( nodeName === "button" ) {
+			return valueAttrGet.apply( this, arguments );
+		}
+		if ( nodeName !== "input" && nodeName !== "option" ) {
+			migrateWarn("jQuery.fn.attr('value') no longer gets properties");
+		}
+		return name in elem ?
+			elem.value :
+			null;
+	},
+	set: function( elem, value ) {
+		var nodeName = ( elem.nodeName || "" ).toLowerCase();
+		if ( nodeName === "button" ) {
+			return valueAttrSet.apply( this, arguments );
+		}
+		if ( nodeName !== "input" && nodeName !== "option" ) {
+			migrateWarn("jQuery.fn.attr('value', val) no longer sets properties");
+		}
+		// Does not return so that setAttribute is also used
+		elem.value = value;
+	}
+};
+
+
+var matched, browser,
+	oldInit = jQuery.fn.init,
+	oldParseJSON = jQuery.parseJSON,
+	// Note this does NOT include the #9521 XSS fix from 1.7!
+	rquickExpr = /^(?:[^<]*(<[\w\W]+>)[^>]*|#([\w\-]*))$/;
+
+// $(html) "looks like html" rule change
+jQuery.fn.init = function( selector, context, rootjQuery ) {
+	var match;
+
+	if ( selector && typeof selector === "string" && !jQuery.isPlainObject( context ) &&
+			(match = rquickExpr.exec( selector )) && match[1] ) {
+		// This is an HTML string according to the "old" rules; is it still?
+		if ( selector.charAt( 0 ) !== "<" ) {
+			migrateWarn("$(html) HTML strings must start with '<' character");
+		}
+		// Now process using loose rules; let pre-1.8 play too
+		if ( context && context.context ) {
+			// jQuery object as context; parseHTML expects a DOM object
+			context = context.context;
+		}
+		if ( jQuery.parseHTML ) {
+			return oldInit.call( this, jQuery.parseHTML( jQuery.trim(selector), context, true ),
+					context, rootjQuery );
+		}
+	}
+	return oldInit.apply( this, arguments );
+};
+jQuery.fn.init.prototype = jQuery.fn;
+
+// Let $.parseJSON(falsy_value) return null
+jQuery.parseJSON = function( json ) {
+	if ( !json && json !== null ) {
+		migrateWarn("jQuery.parseJSON requires a valid JSON string");
+		return null;
+	}
+	return oldParseJSON.apply( this, arguments );
+};
+
+jQuery.uaMatch = function( ua ) {
+	ua = ua.toLowerCase();
+
+	var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+		/(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+		/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+		/(msie) ([\w.]+)/.exec( ua ) ||
+		ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+		[];
+
+	return {
+		browser: match[ 1 ] || "",
+		version: match[ 2 ] || "0"
+	};
+};
+
+matched = jQuery.uaMatch( navigator.userAgent );
+browser = {};
+
+if ( matched.browser ) {
+	browser[ matched.browser ] = true;
+	browser.version = matched.version;
+}
+
+// Chrome is Webkit, but Webkit is also Safari.
+if ( browser.chrome ) {
+	browser.webkit = true;
+} else if ( browser.webkit ) {
+	browser.safari = true;
+}
+
+jQuery.browser = browser;
+
+// Warn if the code tries to get jQuery.browser
+migrateWarnProp( jQuery, "browser", browser, "jQuery.browser is deprecated" );
+
+jQuery.sub = function() {
+	function jQuerySub( selector, context ) {
+		return new jQuerySub.fn.init( selector, context );
+	}
+	jQuery.extend( true, jQuerySub, this );
+	jQuerySub.superclass = this;
+	jQuerySub.fn = jQuerySub.prototype = this();
+	jQuerySub.fn.constructor = jQuerySub;
+	jQuerySub.sub = this.sub;
+	jQuerySub.fn.init = function init( selector, context ) {
+		if ( context && context instanceof jQuery && !(context instanceof jQuerySub) ) {
+			context = jQuerySub( context );
+		}
+
+		return jQuery.fn.init.call( this, selector, context, rootjQuerySub );
+	};
+	jQuerySub.fn.init.prototype = jQuerySub.fn;
+	var rootjQuerySub = jQuerySub(document);
+	migrateWarn( "jQuery.sub() is deprecated" );
+	return jQuerySub;
+};
+
+
+var oldFnData = jQuery.fn.data;
+
+jQuery.fn.data = function( name ) {
+	var ret, evt,
+		elem = this[0];
+
+	// Handles 1.7 which has this behavior and 1.8 which doesn't
+	if ( elem && name === "events" && arguments.length === 1 ) {
+		ret = jQuery.data( elem, name );
+		evt = jQuery._data( elem, name );
+		if ( ( ret === undefined || ret === evt ) && evt !== undefined ) {
+			migrateWarn("Use of jQuery.fn.data('events') is deprecated");
+			return evt;
+		}
+	}
+	return oldFnData.apply( this, arguments );
+};
+
+
+var rscriptType = /\/(java|ecma)script/i,
+	oldSelf = jQuery.fn.andSelf || jQuery.fn.addBack;
+
+jQuery.fn.andSelf = function() {
+	migrateWarn("jQuery.fn.andSelf() replaced by jQuery.fn.addBack()");
+	return oldSelf.apply( this, arguments );
+};
+
+// Since jQuery.clean is used internally on older versions, we only shim if it's missing
+if ( !jQuery.clean ) {
+	jQuery.clean = function( elems, context, fragment, scripts ) {
+		// Set context per 1.8 logic
+		context = context || document;
+		context = !context.nodeType && context[0] || context;
+		context = context.ownerDocument || context;
+
+		migrateWarn("jQuery.clean() is deprecated");
+
+		var i, elem, handleScript, jsTags,
+			ret = [];
+
+		jQuery.merge( ret, jQuery.buildFragment( elems, context ).childNodes );
+
+		// Complex logic lifted directly from jQuery 1.8
+		if ( fragment ) {
+			// Special handling of each script element
+			handleScript = function( elem ) {
+				// Check if we consider it executable
+				if ( !elem.type || rscriptType.test( elem.type ) ) {
+					// Detach the script and store it in the scripts array (if provided) or the fragment
+					// Return truthy to indicate that it has been handled
+					return scripts ?
+						scripts.push( elem.parentNode ? elem.parentNode.removeChild( elem ) : elem ) :
+						fragment.appendChild( elem );
+				}
+			};
+
+			for ( i = 0; (elem = ret[i]) != null; i++ ) {
+				// Check if we're done after handling an executable script
+				if ( !( jQuery.nodeName( elem, "script" ) && handleScript( elem ) ) ) {
+					// Append to fragment and handle embedded scripts
+					fragment.appendChild( elem );
+					if ( typeof elem.getElementsByTagName !== "undefined" ) {
+						// handleScript alters the DOM, so use jQuery.merge to ensure snapshot iteration
+						jsTags = jQuery.grep( jQuery.merge( [], elem.getElementsByTagName("script") ), handleScript );
+
+						// Splice the scripts into ret after their former ancestor and advance our index beyond them
+						ret.splice.apply( ret, [i + 1, 0].concat( jsTags ) );
+						i += jsTags.length;
+					}
+				}
+			}
+		}
+
+		return ret;
+	};
+}
+
+var eventAdd = jQuery.event.add,
+	eventRemove = jQuery.event.remove,
+	eventTrigger = jQuery.event.trigger,
+	oldToggle = jQuery.fn.toggle,
+	oldLive = jQuery.fn.live,
+	oldDie = jQuery.fn.die,
+	ajaxEvents = "ajaxStart|ajaxStop|ajaxSend|ajaxComplete|ajaxError|ajaxSuccess",
+	rajaxEvent = new RegExp( "\\b(?:" + ajaxEvents + ")\\b" ),
+	rhoverHack = /(?:^|\s)hover(\.\S+|)\b/,
+	hoverHack = function( events ) {
+		if ( typeof( events ) != "string" || jQuery.event.special.hover ) {
+			return events;
+		}
+		if ( rhoverHack.test( events ) ) {
+			migrateWarn("'hover' pseudo-event is deprecated, use 'mouseenter mouseleave'");
+		}
+		return events && events.replace( rhoverHack, "mouseenter$1 mouseleave$1" );
+	};
+
+// Event props removed in 1.9, put them back if needed; no practical way to warn them
+if ( jQuery.event.props && jQuery.event.props[ 0 ] !== "attrChange" ) {
+	jQuery.event.props.unshift( "attrChange", "attrName", "relatedNode", "srcElement" );
+}
+
+// Undocumented jQuery.event.handle was "deprecated" in jQuery 1.7
+if ( jQuery.event.dispatch ) {
+	migrateWarnProp( jQuery.event, "handle", jQuery.event.dispatch, "jQuery.event.handle is undocumented and deprecated" );
+}
+
+// Support for 'hover' pseudo-event and ajax event warnings
+jQuery.event.add = function( elem, types, handler, data, selector ){
+	if ( elem !== document && rajaxEvent.test( types ) ) {
+		migrateWarn( "AJAX events should be attached to document: " + types );
+	}
+	eventAdd.call( this, elem, hoverHack( types || "" ), handler, data, selector );
+};
+jQuery.event.remove = function( elem, types, handler, selector, mappedTypes ){
+	eventRemove.call( this, elem, hoverHack( types ) || "", handler, selector, mappedTypes );
+};
+
+jQuery.fn.error = function() {
+	var args = Array.prototype.slice.call( arguments, 0);
+	migrateWarn("jQuery.fn.error() is deprecated");
+	args.splice( 0, 0, "error" );
+	if ( arguments.length ) {
+		return this.bind.apply( this, args );
+	}
+	// error event should not bubble to window, although it does pre-1.7
+	this.triggerHandler.apply( this, args );
+	return this;
+};
+
+jQuery.fn.toggle = function( fn, fn2 ) {
+
+	// Don't mess with animation or css toggles
+	if ( !jQuery.isFunction( fn ) || !jQuery.isFunction( fn2 ) ) {
+		return oldToggle.apply( this, arguments );
+	}
+	migrateWarn("jQuery.fn.toggle(handler, handler...) is deprecated");
+
+	// Save reference to arguments for access in closure
+	var args = arguments,
+		guid = fn.guid || jQuery.guid++,
+		i = 0,
+		toggler = function( event ) {
+			// Figure out which function to execute
+			var lastToggle = ( jQuery._data( this, "lastToggle" + fn.guid ) || 0 ) % i;
+			jQuery._data( this, "lastToggle" + fn.guid, lastToggle + 1 );
+
+			// Make sure that clicks stop
+			event.preventDefault();
+
+			// and execute the function
+			return args[ lastToggle ].apply( this, arguments ) || false;
+		};
+
+	// link all the functions, so any of them can unbind this click handler
+	toggler.guid = guid;
+	while ( i < args.length ) {
+		args[ i++ ].guid = guid;
+	}
+
+	return this.click( toggler );
+};
+
+jQuery.fn.live = function( types, data, fn ) {
+	migrateWarn("jQuery.fn.live() is deprecated");
+	if ( oldLive ) {
+		return oldLive.apply( this, arguments );
+	}
+	jQuery( this.context ).on( types, this.selector, data, fn );
+	return this;
+};
+
+jQuery.fn.die = function( types, fn ) {
+	migrateWarn("jQuery.fn.die() is deprecated");
+	if ( oldDie ) {
+		return oldDie.apply( this, arguments );
+	}
+	jQuery( this.context ).off( types, this.selector || "**", fn );
+	return this;
+};
+
+// Turn global events into document-triggered events
+jQuery.event.trigger = function( event, data, elem, onlyHandlers  ){
+	if ( !elem & !rajaxEvent.test( event ) ) {
+		migrateWarn( "Global events are undocumented and deprecated" );
+	}
+	return eventTrigger.call( this,  event, data, elem || document, onlyHandlers  );
+};
+jQuery.each( ajaxEvents.split("|"),
+	function( _, name ) {
+		jQuery.event.special[ name ] = {
+			setup: function() {
+				var elem = this;
+
+				// The document needs no shimming; must be !== for oldIE
+				if ( elem !== document ) {
+					jQuery.event.add( document, name + "." + jQuery.guid, function() {
+						jQuery.event.trigger( name, null, elem, true );
+					});
+					jQuery._data( this, name, jQuery.guid++ );
+				}
+				return false;
+			},
+			teardown: function() {
+				if ( this !== document ) {
+					jQuery.event.remove( document, name + "." + jQuery._data( this, name ) );
+				}
+				return false;
+			}
+		};
+	}
+);
+
+
+})( jQuery, window );
+/**
+ * History.js Core
+ * @author Benjamin Arthur Lupton <contact@balupton.com>
+ * @copyright 2010-2011 Benjamin Arthur Lupton <contact@balupton.com>
+ * @license New BSD License <http://creativecommons.org/licenses/BSD/>
+ */
+
+(function(window,undefined){
+	"use strict";
+
+	// ========================================================================
+	// Initialise
+
+	// Localise Globals
+	var
+		console = window.console||undefined, // Prevent a JSLint complain
+		document = window.document, // Make sure we are using the correct document
+		navigator = window.navigator, // Make sure we are using the correct navigator
+		sessionStorage = window.sessionStorage||false, // sessionStorage
+		setTimeout = window.setTimeout,
+		clearTimeout = window.clearTimeout,
+		setInterval = window.setInterval,
+		clearInterval = window.clearInterval,
+		JSON = window.JSON,
+		alert = window.alert,
+		History = window.History = window.History||{}, // Public History Object
+		history = window.history; // Old History Object
+
+	// MooTools Compatibility
+	JSON.stringify = JSON.stringify||JSON.encode;
+	JSON.parse = JSON.parse||JSON.decode;
+
+	// Check Existence
+	if ( typeof History.init !== 'undefined' ) {
+		throw new Error('History.js Core has already been loaded...');
+	}
+
+	// Initialise History
+	History.init = function(){
+		// Check Load Status of Adapter
+		if ( typeof History.Adapter === 'undefined' ) {
+			return false;
+		}
+
+		// Check Load Status of Core
+		if ( typeof History.initCore !== 'undefined' ) {
+			History.initCore();
+		}
+
+		// Check Load Status of HTML4 Support
+		if ( typeof History.initHtml4 !== 'undefined' ) {
+			History.initHtml4();
+		}
+
+		// Return true
+		return true;
+	};
+
+
+	// ========================================================================
+	// Initialise Core
+
+	// Initialise Core
+	History.initCore = function(){
+		// Initialise
+		if ( typeof History.initCore.initialized !== 'undefined' ) {
+			// Already Loaded
+			return false;
+		}
+		else {
+			History.initCore.initialized = true;
+		}
+
+
+		// ====================================================================
+		// Options
+
+		/**
+		 * History.options
+		 * Configurable options
+		 */
+		History.options = History.options||{};
+
+		/**
+		 * History.options.hashChangeInterval
+		 * How long should the interval be before hashchange checks
+		 */
+		History.options.hashChangeInterval = History.options.hashChangeInterval || 100;
+
+		/**
+		 * History.options.safariPollInterval
+		 * How long should the interval be before safari poll checks
+		 */
+		History.options.safariPollInterval = History.options.safariPollInterval || 500;
+
+		/**
+		 * History.options.doubleCheckInterval
+		 * How long should the interval be before we perform a double check
+		 */
+		History.options.doubleCheckInterval = History.options.doubleCheckInterval || 500;
+
+		/**
+		 * History.options.storeInterval
+		 * How long should we wait between store calls
+		 */
+		History.options.storeInterval = History.options.storeInterval || 1000;
+
+		/**
+		 * History.options.busyDelay
+		 * How long should we wait between busy events
+		 */
+		History.options.busyDelay = History.options.busyDelay || 250;
+
+		/**
+		 * History.options.debug
+		 * If true will enable debug messages to be logged
+		 */
+		History.options.debug = History.options.debug || false;
+
+		/**
+		 * History.options.initialTitle
+		 * What is the title of the initial state
+		 */
+		History.options.initialTitle = History.options.initialTitle || document.title;
+
+
+		// ====================================================================
+		// Interval record
+
+		/**
+		 * History.intervalList
+		 * List of intervals set, to be cleared when document is unloaded.
+		 */
+		History.intervalList = [];
+
+		/**
+		 * History.clearAllIntervals
+		 * Clears all setInterval instances.
+		 */
+		History.clearAllIntervals = function(){
+			var i, il = History.intervalList;
+			if (typeof il !== "undefined" && il !== null) {
+				for (i = 0; i < il.length; i++) {
+					clearInterval(il[i]);
+				}
+				History.intervalList = null;
+			}
+		};
+
+
+		// ====================================================================
+		// Debug
+
+		/**
+		 * History.debug(message,...)
+		 * Logs the passed arguments if debug enabled
+		 */
+		History.debug = function(){
+			if ( (History.options.debug||false) ) {
+				History.log.apply(History,arguments);
+			}
+		};
+
+		/**
+		 * History.log(message,...)
+		 * Logs the passed arguments
+		 */
+		History.log = function(){
+			// Prepare
+			var
+				consoleExists = !(typeof console === 'undefined' || typeof console.log === 'undefined' || typeof console.log.apply === 'undefined'),
+				textarea = document.getElementById('log'),
+				message,
+				i,n,
+				args,arg
+				;
+
+			// Write to Console
+			if ( consoleExists ) {
+				args = Array.prototype.slice.call(arguments);
+				message = args.shift();
+				if ( typeof console.debug !== 'undefined' ) {
+					console.debug.apply(console,[message,args]);
+				}
+				else {
+					console.log.apply(console,[message,args]);
+				}
+			}
+			else {
+				message = ("\n"+arguments[0]+"\n");
+			}
+
+			// Write to log
+			for ( i=1,n=arguments.length; i<n; ++i ) {
+				arg = arguments[i];
+				if ( typeof arg === 'object' && typeof JSON !== 'undefined' ) {
+					try {
+						arg = JSON.stringify(arg);
+					}
+					catch ( Exception ) {
+						// Recursive Object
+					}
+				}
+				message += "\n"+arg+"\n";
+			}
+
+			// Textarea
+			if ( textarea ) {
+				textarea.value += message+"\n-----\n";
+				textarea.scrollTop = textarea.scrollHeight - textarea.clientHeight;
+			}
+			// No Textarea, No Console
+			else if ( !consoleExists ) {
+				alert(message);
+			}
+
+			// Return true
+			return true;
+		};
+
+
+		// ====================================================================
+		// Emulated Status
+
+		/**
+		 * History.getInternetExplorerMajorVersion()
+		 * Get's the major version of Internet Explorer
+		 * @return {integer}
+		 * @license Public Domain
+		 * @author Benjamin Arthur Lupton <contact@balupton.com>
+		 * @author James Padolsey <https://gist.github.com/527683>
+		 */
+		History.getInternetExplorerMajorVersion = function(){
+			var result = History.getInternetExplorerMajorVersion.cached =
+					(typeof History.getInternetExplorerMajorVersion.cached !== 'undefined')
+				?	History.getInternetExplorerMajorVersion.cached
+				:	(function(){
+						var v = 3,
+								div = document.createElement('div'),
+								all = div.getElementsByTagName('i');
+						while ( (div.innerHTML = '<!--[if gt IE ' + (++v) + ']><i></i><![endif]-->') && all[0] ) {}
+						return (v > 4) ? v : false;
+					})()
+				;
+			return result;
+		};
+
+		/**
+		 * History.isInternetExplorer()
+		 * Are we using Internet Explorer?
+		 * @return {boolean}
+		 * @license Public Domain
+		 * @author Benjamin Arthur Lupton <contact@balupton.com>
+		 */
+		History.isInternetExplorer = function(){
+			var result =
+				History.isInternetExplorer.cached =
+				(typeof History.isInternetExplorer.cached !== 'undefined')
+					?	History.isInternetExplorer.cached
+					:	Boolean(History.getInternetExplorerMajorVersion())
+				;
+			return result;
+		};
+
+		/**
+		 * History.emulated
+		 * Which features require emulating?
+		 */
+		History.emulated = {
+			pushState: !Boolean(
+				window.history && window.history.pushState && window.history.replaceState
+				&& !(
+					(/ Mobile\/([1-7][a-z]|(8([abcde]|f(1[0-8]))))/i).test(navigator.userAgent) /* disable for versions of iOS before version 4.3 (8F190) */
+					|| (/AppleWebKit\/5([0-2]|3[0-2])/i).test(navigator.userAgent) /* disable for the mercury iOS browser, or at least older versions of the webkit engine */
+				)
+			),
+			hashChange: Boolean(
+				!(('onhashchange' in window) || ('onhashchange' in document))
+				||
+				(History.isInternetExplorer() && History.getInternetExplorerMajorVersion() < 8)
+			)
+		};
+
+		/**
+		 * History.enabled
+		 * Is History enabled?
+		 */
+		History.enabled = !History.emulated.pushState;
+
+		/**
+		 * History.bugs
+		 * Which bugs are present
+		 */
+		History.bugs = {
+			/**
+			 * Safari 5 and Safari iOS 4 fail to return to the correct state once a hash is replaced by a `replaceState` call
+			 * https://bugs.webkit.org/show_bug.cgi?id=56249
+			 */
+			setHash: Boolean(!History.emulated.pushState && navigator.vendor === 'Apple Computer, Inc.' && /AppleWebKit\/5([0-2]|3[0-3])/.test(navigator.userAgent)),
+
+			/**
+			 * Safari 5 and Safari iOS 4 sometimes fail to apply the state change under busy conditions
+			 * https://bugs.webkit.org/show_bug.cgi?id=42940
+			 */
+			safariPoll: Boolean(!History.emulated.pushState && navigator.vendor === 'Apple Computer, Inc.' && /AppleWebKit\/5([0-2]|3[0-3])/.test(navigator.userAgent)),
+
+			/**
+			 * MSIE 6 and 7 sometimes do not apply a hash even it was told to (requiring a second call to the apply function)
+			 */
+			ieDoubleCheck: Boolean(History.isInternetExplorer() && History.getInternetExplorerMajorVersion() < 8),
+
+			/**
+			 * MSIE 6 requires the entire hash to be encoded for the hashes to trigger the onHashChange event
+			 */
+			hashEscape: Boolean(History.isInternetExplorer() && History.getInternetExplorerMajorVersion() < 7)
+		};
+
+		/**
+		 * History.isEmptyObject(obj)
+		 * Checks to see if the Object is Empty
+		 * @param {Object} obj
+		 * @return {boolean}
+		 */
+		History.isEmptyObject = function(obj) {
+			for ( var name in obj ) {
+				return false;
+			}
+			return true;
+		};
+
+		/**
+		 * History.cloneObject(obj)
+		 * Clones a object and eliminate all references to the original contexts
+		 * @param {Object} obj
+		 * @return {Object}
+		 */
+		History.cloneObject = function(obj) {
+			var hash,newObj;
+			if ( obj ) {
+				hash = JSON.stringify(obj);
+				newObj = JSON.parse(hash);
+			}
+			else {
+				newObj = {};
+			}
+			return newObj;
+		};
+
+
+		// ====================================================================
+		// URL Helpers
+
+		/**
+		 * History.getRootUrl()
+		 * Turns "http://mysite.com/dir/page.html?asd" into "http://mysite.com"
+		 * @return {String} rootUrl
+		 */
+		History.getRootUrl = function(){
+			// Create
+			var rootUrl = document.location.protocol+'//'+(document.location.hostname||document.location.host);
+			if ( document.location.port||false ) {
+				rootUrl += ':'+document.location.port;
+			}
+			rootUrl += '/';
+
+			// Return
+			return rootUrl;
+		};
+
+		/**
+		 * History.getBaseHref()
+		 * Fetches the `href` attribute of the `<base href="...">` element if it exists
+		 * @return {String} baseHref
+		 */
+		History.getBaseHref = function(){
+			// Create
+			var
+				baseElements = document.getElementsByTagName('base'),
+				baseElement = null,
+				baseHref = '';
+
+			// Test for Base Element
+			if ( baseElements.length === 1 ) {
+				// Prepare for Base Element
+				baseElement = baseElements[0];
+				baseHref = baseElement.href.replace(/[^\/]+$/,'');
+			}
+
+			// Adjust trailing slash
+			baseHref = baseHref.replace(/\/+$/,'');
+			if ( baseHref ) baseHref += '/';
+
+			// Return
+			return baseHref;
+		};
+
+		/**
+		 * History.getBaseUrl()
+		 * Fetches the baseHref or basePageUrl or rootUrl (whichever one exists first)
+		 * @return {String} baseUrl
+		 */
+		History.getBaseUrl = function(){
+			// Create
+			var baseUrl = History.getBaseHref()||History.getBasePageUrl()||History.getRootUrl();
+
+			// Return
+			return baseUrl;
+		};
+
+		/**
+		 * History.getPageUrl()
+		 * Fetches the URL of the current page
+		 * @return {String} pageUrl
+		 */
+		History.getPageUrl = function(){
+			// Fetch
+			var
+				State = History.getState(false,false),
+				stateUrl = (State||{}).url||document.location.href,
+				pageUrl;
+
+			// Create
+			pageUrl = stateUrl.replace(/\/+$/,'').replace(/[^\/]+$/,function(part,index,string){
+				return (/\./).test(part) ? part : part+'/';
+			});
+
+			// Return
+			return pageUrl;
+		};
+
+		/**
+		 * History.getBasePageUrl()
+		 * Fetches the Url of the directory of the current page
+		 * @return {String} basePageUrl
+		 */
+		History.getBasePageUrl = function(){
+			// Create
+			var basePageUrl = document.location.href.replace(/[#\?].*/,'').replace(/[^\/]+$/,function(part,index,string){
+				return (/[^\/]$/).test(part) ? '' : part;
+			}).replace(/\/+$/,'')+'/';
+
+			// Return
+			return basePageUrl;
+		};
+
+		/**
+		 * History.getFullUrl(url)
+		 * Ensures that we have an absolute URL and not a relative URL
+		 * @param {string} url
+		 * @param {Boolean} allowBaseHref
+		 * @return {string} fullUrl
+		 */
+		History.getFullUrl = function(url,allowBaseHref){
+			// Prepare
+			var fullUrl = url, firstChar = url.substring(0,1);
+			allowBaseHref = (typeof allowBaseHref === 'undefined') ? true : allowBaseHref;
+
+			// Check
+			if ( /[a-z]+\:\/\//.test(url) ) {
+				// Full URL
+			}
+			else if ( firstChar === '/' ) {
+				// Root URL
+				fullUrl = History.getRootUrl()+url.replace(/^\/+/,'');
+			}
+			else if ( firstChar === '#' ) {
+				// Anchor URL
+				fullUrl = History.getPageUrl().replace(/#.*/,'')+url;
+			}
+			else if ( firstChar === '?' ) {
+				// Query URL
+				fullUrl = History.getPageUrl().replace(/[\?#].*/,'')+url;
+			}
+			else {
+				// Relative URL
+				if ( allowBaseHref ) {
+					fullUrl = History.getBaseUrl()+url.replace(/^(\.\/)+/,'');
+				} else {
+					fullUrl = History.getBasePageUrl()+url.replace(/^(\.\/)+/,'');
+				}
+				// We have an if condition above as we do not want hashes
+				// which are relative to the baseHref in our URLs
+				// as if the baseHref changes, then all our bookmarks
+				// would now point to different locations
+				// whereas the basePageUrl will always stay the same
+			}
+
+			// Return
+			return fullUrl.replace(/\#$/,'');
+		};
+
+		/**
+		 * History.getShortUrl(url)
+		 * Ensures that we have a relative URL and not a absolute URL
+		 * @param {string} url
+		 * @return {string} url
+		 */
+		History.getShortUrl = function(url){
+			// Prepare
+			var shortUrl = url, baseUrl = History.getBaseUrl(), rootUrl = History.getRootUrl();
+
+			// Trim baseUrl
+			if ( History.emulated.pushState ) {
+				// We are in a if statement as when pushState is not emulated
+				// The actual url these short urls are relative to can change
+				// So within the same session, we the url may end up somewhere different
+				shortUrl = shortUrl.replace(baseUrl,'');
+			}
+
+			// Trim rootUrl
+			shortUrl = shortUrl.replace(rootUrl,'/');
+
+			// Ensure we can still detect it as a state
+			if ( History.isTraditionalAnchor(shortUrl) ) {
+				shortUrl = './'+shortUrl;
+			}
+
+			// Clean It
+			shortUrl = shortUrl.replace(/^(\.\/)+/g,'./').replace(/\#$/,'');
+
+			// Return
+			return shortUrl;
+		};
+
+
+		// ====================================================================
+		// State Storage
+
+		/**
+		 * History.store
+		 * The store for all session specific data
+		 */
+		History.store = {};
+
+		/**
+		 * History.idToState
+		 * 1-1: State ID to State Object
+		 */
+		History.idToState = History.idToState||{};
+
+		/**
+		 * History.stateToId
+		 * 1-1: State String to State ID
+		 */
+		History.stateToId = History.stateToId||{};
+
+		/**
+		 * History.urlToId
+		 * 1-1: State URL to State ID
+		 */
+		History.urlToId = History.urlToId||{};
+
+		/**
+		 * History.storedStates
+		 * Store the states in an array
+		 */
+		History.storedStates = History.storedStates||[];
+
+		/**
+		 * History.savedStates
+		 * Saved the states in an array
+		 */
+		History.savedStates = History.savedStates||[];
+
+		/**
+		 * History.noramlizeStore()
+		 * Noramlize the store by adding necessary values
+		 */
+		History.normalizeStore = function(){
+			History.store.idToState = History.store.idToState||{};
+			History.store.urlToId = History.store.urlToId||{};
+			History.store.stateToId = History.store.stateToId||{};
+		};
+
+		/**
+		 * History.getState()
+		 * Get an object containing the data, title and url of the current state
+		 * @param {Boolean} friendly
+		 * @param {Boolean} create
+		 * @return {Object} State
+		 */
+		History.getState = function(friendly,create){
+			// Prepare
+			if ( typeof friendly === 'undefined' ) { friendly = true; }
+			if ( typeof create === 'undefined' ) { create = true; }
+
+			// Fetch
+			var State = History.getLastSavedState();
+
+			// Create
+			if ( !State && create ) {
+				State = History.createStateObject();
+			}
+
+			// Adjust
+			if ( friendly ) {
+				State = History.cloneObject(State);
+				State.url = State.cleanUrl||State.url;
+			}
+
+			// Return
+			return State;
+		};
+
+		/**
+		 * History.getIdByState(State)
+		 * Gets a ID for a State
+		 * @param {State} newState
+		 * @return {String} id
+		 */
+		History.getIdByState = function(newState){
+
+			// Fetch ID
+			var id = History.extractId(newState.url),
+				str;
+			
+			if ( !id ) {
+				// Find ID via State String
+				str = History.getStateString(newState);
+				if ( typeof History.stateToId[str] !== 'undefined' ) {
+					id = History.stateToId[str];
+				}
+				else if ( typeof History.store.stateToId[str] !== 'undefined' ) {
+					id = History.store.stateToId[str];
+				}
+				else {
+					// Generate a new ID
+					while ( true ) {
+						id = (new Date()).getTime() + String(Math.random()).replace(/\D/g,'');
+						if ( typeof History.idToState[id] === 'undefined' && typeof History.store.idToState[id] === 'undefined' ) {
+							break;
+						}
+					}
+
+					// Apply the new State to the ID
+					History.stateToId[str] = id;
+					History.idToState[id] = newState;
+				}
+			}
+
+			// Return ID
+			return id;
+		};
+
+		/**
+		 * History.normalizeState(State)
+		 * Expands a State Object
+		 * @param {object} State
+		 * @return {object}
+		 */
+		History.normalizeState = function(oldState){
+			// Variables
+			var newState, dataNotEmpty;
+
+			// Prepare
+			if ( !oldState || (typeof oldState !== 'object') ) {
+				oldState = {};
+			}
+
+			// Check
+			if ( typeof oldState.normalized !== 'undefined' ) {
+				return oldState;
+			}
+
+			// Adjust
+			if ( !oldState.data || (typeof oldState.data !== 'object') ) {
+				oldState.data = {};
+			}
+
+			// ----------------------------------------------------------------
+
+			// Create
+			newState = {};
+			newState.normalized = true;
+			newState.title = oldState.title||'';
+			newState.url = History.getFullUrl(History.unescapeString(oldState.url||document.location.href));
+			newState.hash = History.getShortUrl(newState.url);
+			newState.data = History.cloneObject(oldState.data);
+
+			// Fetch ID
+			newState.id = History.getIdByState(newState);
+
+			// ----------------------------------------------------------------
+
+			// Clean the URL
+			newState.cleanUrl = newState.url.replace(/\??\&_suid.*/,'');
+			newState.url = newState.cleanUrl;
+
+			// Check to see if we have more than just a url
+			dataNotEmpty = !History.isEmptyObject(newState.data);
+
+			// Apply
+			if ( newState.title || dataNotEmpty ) {
+				// Add ID to Hash
+				newState.hash = History.getShortUrl(newState.url).replace(/\??\&_suid.*/,'');
+				if ( !/\?/.test(newState.hash) ) {
+					newState.hash += '?';
+				}
+				newState.hash += '&_suid='+newState.id;
+			}
+
+			// Create the Hashed URL
+			newState.hashedUrl = History.getFullUrl(newState.hash);
+
+			// ----------------------------------------------------------------
+
+			// Update the URL if we have a duplicate
+			if ( (History.emulated.pushState || History.bugs.safariPoll) && History.hasUrlDuplicate(newState) ) {
+				newState.url = newState.hashedUrl;
+			}
+
+			// ----------------------------------------------------------------
+
+			// Return
+			return newState;
+		};
+
+		/**
+		 * History.createStateObject(data,title,url)
+		 * Creates a object based on the data, title and url state params
+		 * @param {object} data
+		 * @param {string} title
+		 * @param {string} url
+		 * @return {object}
+		 */
+		History.createStateObject = function(data,title,url){
+			// Hashify
+			var State = {
+				'data': data,
+				'title': title,
+				'url': url
+			};
+
+			// Expand the State
+			State = History.normalizeState(State);
+
+			// Return object
+			return State;
+		};
+
+		/**
+		 * History.getStateById(id)
+		 * Get a state by it's UID
+		 * @param {String} id
+		 */
+		History.getStateById = function(id){
+			// Prepare
+			id = String(id);
+
+			// Retrieve
+			var State = History.idToState[id] || History.store.idToState[id] || undefined;
+
+			// Return State
+			return State;
+		};
+
+		/**
+		 * Get a State's String
+		 * @param {State} passedState
+		 */
+		History.getStateString = function(passedState){
+			// Prepare
+			var State, cleanedState, str;
+
+			// Fetch
+			State = History.normalizeState(passedState);
+
+			// Clean
+			cleanedState = {
+				data: State.data,
+				title: passedState.title,
+				url: passedState.url
+			};
+
+			// Fetch
+			str = JSON.stringify(cleanedState);
+
+			// Return
+			return str;
+		};
+
+		/**
+		 * Get a State's ID
+		 * @param {State} passedState
+		 * @return {String} id
+		 */
+		History.getStateId = function(passedState){
+			// Prepare
+			var State, id;
+			
+			// Fetch
+			State = History.normalizeState(passedState);
+
+			// Fetch
+			id = State.id;
+
+			// Return
+			return id;
+		};
+
+		/**
+		 * History.getHashByState(State)
+		 * Creates a Hash for the State Object
+		 * @param {State} passedState
+		 * @return {String} hash
+		 */
+		History.getHashByState = function(passedState){
+			// Prepare
+			var State, hash;
+			
+			// Fetch
+			State = History.normalizeState(passedState);
+
+			// Hash
+			hash = State.hash;
+
+			// Return
+			return hash;
+		};
+
+		/**
+		 * History.extractId(url_or_hash)
+		 * Get a State ID by it's URL or Hash
+		 * @param {string} url_or_hash
+		 * @return {string} id
+		 */
+		History.extractId = function ( url_or_hash ) {
+			// Prepare
+			var id,parts,url;
+
+			// Extract
+			parts = /(.*)\&_suid=([0-9]+)$/.exec(url_or_hash);
+			url = parts ? (parts[1]||url_or_hash) : url_or_hash;
+			id = parts ? String(parts[2]||'') : '';
+
+			// Return
+			return id||false;
+		};
+
+		/**
+		 * History.isTraditionalAnchor
+		 * Checks to see if the url is a traditional anchor or not
+		 * @param {String} url_or_hash
+		 * @return {Boolean}
+		 */
+		History.isTraditionalAnchor = function(url_or_hash){
+			// Check
+			var isTraditional = !(/[\/\?\.]/.test(url_or_hash));
+
+			// Return
+			return isTraditional;
+		};
+
+		/**
+		 * History.extractState
+		 * Get a State by it's URL or Hash
+		 * @param {String} url_or_hash
+		 * @return {State|null}
+		 */
+		History.extractState = function(url_or_hash,create){
+			// Prepare
+			var State = null, id, url;
+			create = create||false;
+
+			// Fetch SUID
+			id = History.extractId(url_or_hash);
+			if ( id ) {
+				State = History.getStateById(id);
+			}
+
+			// Fetch SUID returned no State
+			if ( !State ) {
+				// Fetch URL
+				url = History.getFullUrl(url_or_hash);
+
+				// Check URL
+				id = History.getIdByUrl(url)||false;
+				if ( id ) {
+					State = History.getStateById(id);
+				}
+
+				// Create State
+				if ( !State && create && !History.isTraditionalAnchor(url_or_hash) ) {
+					State = History.createStateObject(null,null,url);
+				}
+			}
+
+			// Return
+			return State;
+		};
+
+		/**
+		 * History.getIdByUrl()
+		 * Get a State ID by a State URL
+		 */
+		History.getIdByUrl = function(url){
+			// Fetch
+			var id = History.urlToId[url] || History.store.urlToId[url] || undefined;
+
+			// Return
+			return id;
+		};
+
+		/**
+		 * History.getLastSavedState()
+		 * Get an object containing the data, title and url of the current state
+		 * @return {Object} State
+		 */
+		History.getLastSavedState = function(){
+			return History.savedStates[History.savedStates.length-1]||undefined;
+		};
+
+		/**
+		 * History.getLastStoredState()
+		 * Get an object containing the data, title and url of the current state
+		 * @return {Object} State
+		 */
+		History.getLastStoredState = function(){
+			return History.storedStates[History.storedStates.length-1]||undefined;
+		};
+
+		/**
+		 * History.hasUrlDuplicate
+		 * Checks if a Url will have a url conflict
+		 * @param {Object} newState
+		 * @return {Boolean} hasDuplicate
+		 */
+		History.hasUrlDuplicate = function(newState) {
+			// Prepare
+			var hasDuplicate = false,
+				oldState;
+
+			// Fetch
+			oldState = History.extractState(newState.url);
+
+			// Check
+			hasDuplicate = oldState && oldState.id !== newState.id;
+
+			// Return
+			return hasDuplicate;
+		};
+
+		/**
+		 * History.storeState
+		 * Store a State
+		 * @param {Object} newState
+		 * @return {Object} newState
+		 */
+		History.storeState = function(newState){
+			// Store the State
+			History.urlToId[newState.url] = newState.id;
+
+			// Push the State
+			History.storedStates.push(History.cloneObject(newState));
+
+			// Return newState
+			return newState;
+		};
+
+		/**
+		 * History.isLastSavedState(newState)
+		 * Tests to see if the state is the last state
+		 * @param {Object} newState
+		 * @return {boolean} isLast
+		 */
+		History.isLastSavedState = function(newState){
+			// Prepare
+			var isLast = false,
+				newId, oldState, oldId;
+
+			// Check
+			if ( History.savedStates.length ) {
+				newId = newState.id;
+				oldState = History.getLastSavedState();
+				oldId = oldState.id;
+
+				// Check
+				isLast = (newId === oldId);
+			}
+
+			// Return
+			return isLast;
+		};
+
+		/**
+		 * History.saveState
+		 * Push a State
+		 * @param {Object} newState
+		 * @return {boolean} changed
+		 */
+		History.saveState = function(newState){
+			// Check Hash
+			if ( History.isLastSavedState(newState) ) {
+				return false;
+			}
+
+			// Push the State
+			History.savedStates.push(History.cloneObject(newState));
+
+			// Return true
+			return true;
+		};
+
+		/**
+		 * History.getStateByIndex()
+		 * Gets a state by the index
+		 * @param {integer} index
+		 * @return {Object}
+		 */
+		History.getStateByIndex = function(index){
+			// Prepare
+			var State = null;
+
+			// Handle
+			if ( typeof index === 'undefined' ) {
+				// Get the last inserted
+				State = History.savedStates[History.savedStates.length-1];
+			}
+			else if ( index < 0 ) {
+				// Get from the end
+				State = History.savedStates[History.savedStates.length+index];
+			}
+			else {
+				// Get from the beginning
+				State = History.savedStates[index];
+			}
+
+			// Return State
+			return State;
+		};
+
+
+		// ====================================================================
+		// Hash Helpers
+
+		/**
+		 * History.getHash()
+		 * Gets the current document hash
+		 * @return {string}
+		 */
+		History.getHash = function(){
+			var hash = History.unescapeHash(document.location.hash);
+			return hash;
+		};
+
+		/**
+		 * History.unescapeString()
+		 * Unescape a string
+		 * @param {String} str
+		 * @return {string}
+		 */
+		History.unescapeString = function(str){
+			// Prepare
+			var result = str,
+				tmp;
+
+			// Unescape hash
+			while ( true ) {
+				tmp = window.unescape(result);
+				if ( tmp === result ) {
+					break;
+				}
+				result = tmp;
+			}
+
+			// Return result
+			return result;
+		};
+
+		/**
+		 * History.unescapeHash()
+		 * normalize and Unescape a Hash
+		 * @param {String} hash
+		 * @return {string}
+		 */
+		History.unescapeHash = function(hash){
+			// Prepare
+			var result = History.normalizeHash(hash);
+
+			// Unescape hash
+			result = History.unescapeString(result);
+
+			// Return result
+			return result;
+		};
+
+		/**
+		 * History.normalizeHash()
+		 * normalize a hash across browsers
+		 * @return {string}
+		 */
+		History.normalizeHash = function(hash){
+			// Prepare
+			var result = hash.replace(/[^#]*#/,'').replace(/#.*/, '');
+
+			// Return result
+			return result;
+		};
+
+		/**
+		 * History.setHash(hash)
+		 * Sets the document hash
+		 * @param {string} hash
+		 * @return {History}
+		 */
+		History.setHash = function(hash,queue){
+			// Prepare
+			var adjustedHash, State, pageUrl;
+
+			// Handle Queueing
+			if ( queue !== false && History.busy() ) {
+				// Wait + Push to Queue
+				//History.debug('History.setHash: we must wait', arguments);
+				History.pushQueue({
+					scope: History,
+					callback: History.setHash,
+					args: arguments,
+					queue: queue
+				});
+				return false;
+			}
+
+			// Log
+			//History.debug('History.setHash: called',hash);
+
+			// Prepare
+			adjustedHash = History.escapeHash(hash);
+
+			// Make Busy + Continue
+			History.busy(true);
+
+			// Check if hash is a state
+			State = History.extractState(hash,true);
+			if ( State && !History.emulated.pushState ) {
+				// Hash is a state so skip the setHash
+				//History.debug('History.setHash: Hash is a state so skipping the hash set with a direct pushState call',arguments);
+
+				// PushState
+				History.pushState(State.data,State.title,State.url,false);
+			}
+			else if ( document.location.hash !== adjustedHash ) {
+				// Hash is a proper hash, so apply it
+
+				// Handle browser bugs
+				if ( History.bugs.setHash ) {
+					// Fix Safari Bug https://bugs.webkit.org/show_bug.cgi?id=56249
+
+					// Fetch the base page
+					pageUrl = History.getPageUrl();
+
+					// Safari hash apply
+					History.pushState(null,null,pageUrl+'#'+adjustedHash,false);
+				}
+				else {
+					// Normal hash apply
+					document.location.hash = adjustedHash;
+				}
+			}
+
+			// Chain
+			return History;
+		};
+
+		/**
+		 * History.escape()
+		 * normalize and Escape a Hash
+		 * @return {string}
+		 */
+		History.escapeHash = function(hash){
+			// Prepare
+			var result = History.normalizeHash(hash);
+
+			// Escape hash
+			result = window.escape(result);
+
+			// IE6 Escape Bug
+			if ( !History.bugs.hashEscape ) {
+				// Restore common parts
+				result = result
+					.replace(/\%21/g,'!')
+					.replace(/\%26/g,'&')
+					.replace(/\%3D/g,'=')
+					.replace(/\%3F/g,'?');
+			}
+
+			// Return result
+			return result;
+		};
+
+		/**
+		 * History.getHashByUrl(url)
+		 * Extracts the Hash from a URL
+		 * @param {string} url
+		 * @return {string} url
+		 */
+		History.getHashByUrl = function(url){
+			// Extract the hash
+			var hash = String(url)
+				.replace(/([^#]*)#?([^#]*)#?(.*)/, '$2')
+				;
+
+			// Unescape hash
+			hash = History.unescapeHash(hash);
+
+			// Return hash
+			return hash;
+		};
+
+		/**
+		 * History.setTitle(title)
+		 * Applies the title to the document
+		 * @param {State} newState
+		 * @return {Boolean}
+		 */
+		History.setTitle = function(newState){
+			// Prepare
+			var title = newState.title,
+				firstState;
+
+			// Initial
+			if ( !title ) {
+				firstState = History.getStateByIndex(0);
+				if ( firstState && firstState.url === newState.url ) {
+					title = firstState.title||History.options.initialTitle;
+				}
+			}
+
+			// Apply
+			try {
+				document.getElementsByTagName('title')[0].innerHTML = title.replace('<','&lt;').replace('>','&gt;').replace(' & ',' &amp; ');
+			}
+			catch ( Exception ) { }
+			document.title = title;
+
+			// Chain
+			return History;
+		};
+
+
+		// ====================================================================
+		// Queueing
+
+		/**
+		 * History.queues
+		 * The list of queues to use
+		 * First In, First Out
+		 */
+		History.queues = [];
+
+		/**
+		 * History.busy(value)
+		 * @param {boolean} value [optional]
+		 * @return {boolean} busy
+		 */
+		History.busy = function(value){
+			// Apply
+			if ( typeof value !== 'undefined' ) {
+				//History.debug('History.busy: changing ['+(History.busy.flag||false)+'] to ['+(value||false)+']', History.queues.length);
+				History.busy.flag = value;
+			}
+			// Default
+			else if ( typeof History.busy.flag === 'undefined' ) {
+				History.busy.flag = false;
+			}
+
+			// Queue
+			if ( !History.busy.flag ) {
+				// Execute the next item in the queue
+				clearTimeout(History.busy.timeout);
+				var fireNext = function(){
+					var i, queue, item;
+					if ( History.busy.flag ) return;
+					for ( i=History.queues.length-1; i >= 0; --i ) {
+						queue = History.queues[i];
+						if ( queue.length === 0 ) continue;
+						item = queue.shift();
+						History.fireQueueItem(item);
+						History.busy.timeout = setTimeout(fireNext,History.options.busyDelay);
+					}
+				};
+				History.busy.timeout = setTimeout(fireNext,History.options.busyDelay);
+			}
+
+			// Return
+			return History.busy.flag;
+		};
+
+		/**
+		 * History.busy.flag
+		 */
+		History.busy.flag = false;
+
+		/**
+		 * History.fireQueueItem(item)
+		 * Fire a Queue Item
+		 * @param {Object} item
+		 * @return {Mixed} result
+		 */
+		History.fireQueueItem = function(item){
+			return item.callback.apply(item.scope||History,item.args||[]);
+		};
+
+		/**
+		 * History.pushQueue(callback,args)
+		 * Add an item to the queue
+		 * @param {Object} item [scope,callback,args,queue]
+		 */
+		History.pushQueue = function(item){
+			// Prepare the queue
+			History.queues[item.queue||0] = History.queues[item.queue||0]||[];
+
+			// Add to the queue
+			History.queues[item.queue||0].push(item);
+
+			// Chain
+			return History;
+		};
+
+		/**
+		 * History.queue (item,queue), (func,queue), (func), (item)
+		 * Either firs the item now if not busy, or adds it to the queue
+		 */
+		History.queue = function(item,queue){
+			// Prepare
+			if ( typeof item === 'function' ) {
+				item = {
+					callback: item
+				};
+			}
+			if ( typeof queue !== 'undefined' ) {
+				item.queue = queue;
+			}
+
+			// Handle
+			if ( History.busy() ) {
+				History.pushQueue(item);
+			} else {
+				History.fireQueueItem(item);
+			}
+
+			// Chain
+			return History;
+		};
+
+		/**
+		 * History.clearQueue()
+		 * Clears the Queue
+		 */
+		History.clearQueue = function(){
+			History.busy.flag = false;
+			History.queues = [];
+			return History;
+		};
+
+
+		// ====================================================================
+		// IE Bug Fix
+
+		/**
+		 * History.stateChanged
+		 * States whether or not the state has changed since the last double check was initialised
+		 */
+		History.stateChanged = false;
+
+		/**
+		 * History.doubleChecker
+		 * Contains the timeout used for the double checks
+		 */
+		History.doubleChecker = false;
+
+		/**
+		 * History.doubleCheckComplete()
+		 * Complete a double check
+		 * @return {History}
+		 */
+		History.doubleCheckComplete = function(){
+			// Update
+			History.stateChanged = true;
+
+			// Clear
+			History.doubleCheckClear();
+
+			// Chain
+			return History;
+		};
+
+		/**
+		 * History.doubleCheckClear()
+		 * Clear a double check
+		 * @return {History}
+		 */
+		History.doubleCheckClear = function(){
+			// Clear
+			if ( History.doubleChecker ) {
+				clearTimeout(History.doubleChecker);
+				History.doubleChecker = false;
+			}
+
+			// Chain
+			return History;
+		};
+
+		/**
+		 * History.doubleCheck()
+		 * Create a double check
+		 * @return {History}
+		 */
+		History.doubleCheck = function(tryAgain){
+			// Reset
+			History.stateChanged = false;
+			History.doubleCheckClear();
+
+			// Fix IE6,IE7 bug where calling history.back or history.forward does not actually change the hash (whereas doing it manually does)
+			// Fix Safari 5 bug where sometimes the state does not change: https://bugs.webkit.org/show_bug.cgi?id=42940
+			if ( History.bugs.ieDoubleCheck ) {
+				// Apply Check
+				History.doubleChecker = setTimeout(
+					function(){
+						History.doubleCheckClear();
+						if ( !History.stateChanged ) {
+							//History.debug('History.doubleCheck: State has not yet changed, trying again', arguments);
+							// Re-Attempt
+							tryAgain();
+						}
+						return true;
+					},
+					History.options.doubleCheckInterval
+				);
+			}
+
+			// Chain
+			return History;
+		};
+
+
+		// ====================================================================
+		// Safari Bug Fix
+
+		/**
+		 * History.safariStatePoll()
+		 * Poll the current state
+		 * @return {History}
+		 */
+		History.safariStatePoll = function(){
+			// Poll the URL
+
+			// Get the Last State which has the new URL
+			var
+				urlState = History.extractState(document.location.href),
+				newState;
+
+			// Check for a difference
+			if ( !History.isLastSavedState(urlState) ) {
+				newState = urlState;
+			}
+			else {
+				return;
+			}
+
+			// Check if we have a state with that url
+			// If not create it
+			if ( !newState ) {
+				//History.debug('History.safariStatePoll: new');
+				newState = History.createStateObject();
+			}
+
+			// Apply the New State
+			//History.debug('History.safariStatePoll: trigger');
+			History.Adapter.trigger(window,'popstate');
+
+			// Chain
+			return History;
+		};
+
+
+		// ====================================================================
+		// State Aliases
+
+		/**
+		 * History.back(queue)
+		 * Send the browser history back one item
+		 * @param {Integer} queue [optional]
+		 */
+		History.back = function(queue){
+			//History.debug('History.back: called', arguments);
+
+			// Handle Queueing
+			if ( queue !== false && History.busy() ) {
+				// Wait + Push to Queue
+				//History.debug('History.back: we must wait', arguments);
+				History.pushQueue({
+					scope: History,
+					callback: History.back,
+					args: arguments,
+					queue: queue
+				});
+				return false;
+			}
+
+			// Make Busy + Continue
+			History.busy(true);
+
+			// Fix certain browser bugs that prevent the state from changing
+			History.doubleCheck(function(){
+				History.back(false);
+			});
+
+			// Go back
+			history.go(-1);
+
+			// End back closure
+			return true;
+		};
+
+		/**
+		 * History.forward(queue)
+		 * Send the browser history forward one item
+		 * @param {Integer} queue [optional]
+		 */
+		History.forward = function(queue){
+			//History.debug('History.forward: called', arguments);
+
+			// Handle Queueing
+			if ( queue !== false && History.busy() ) {
+				// Wait + Push to Queue
+				//History.debug('History.forward: we must wait', arguments);
+				History.pushQueue({
+					scope: History,
+					callback: History.forward,
+					args: arguments,
+					queue: queue
+				});
+				return false;
+			}
+
+			// Make Busy + Continue
+			History.busy(true);
+
+			// Fix certain browser bugs that prevent the state from changing
+			History.doubleCheck(function(){
+				History.forward(false);
+			});
+
+			// Go forward
+			history.go(1);
+
+			// End forward closure
+			return true;
+		};
+
+		/**
+		 * History.go(index,queue)
+		 * Send the browser history back or forward index times
+		 * @param {Integer} queue [optional]
+		 */
+		History.go = function(index,queue){
+			//History.debug('History.go: called', arguments);
+
+			// Prepare
+			var i;
+
+			// Handle
+			if ( index > 0 ) {
+				// Forward
+				for ( i=1; i<=index; ++i ) {
+					History.forward(queue);
+				}
+			}
+			else if ( index < 0 ) {
+				// Backward
+				for ( i=-1; i>=index; --i ) {
+					History.back(queue);
+				}
+			}
+			else {
+				throw new Error('History.go: History.go requires a positive or negative integer passed.');
+			}
+
+			// Chain
+			return History;
+		};
+
+
+		// ====================================================================
+		// HTML5 State Support
+
+		// Non-Native pushState Implementation
+		if ( History.emulated.pushState ) {
+			/*
+			 * Provide Skeleton for HTML4 Browsers
+			 */
+
+			// Prepare
+			var emptyFunction = function(){};
+			History.pushState = History.pushState||emptyFunction;
+			History.replaceState = History.replaceState||emptyFunction;
+		} // History.emulated.pushState
+
+		// Native pushState Implementation
+		else {
+			/*
+			 * Use native HTML5 History API Implementation
+			 */
+
+			/**
+			 * History.onPopState(event,extra)
+			 * Refresh the Current State
+			 */
+			History.onPopState = function(event,extra){
+				// Prepare
+				var stateId = false, newState = false, currentHash, currentState;
+
+				// Reset the double check
+				History.doubleCheckComplete();
+
+				// Check for a Hash, and handle apporiatly
+				currentHash	= History.getHash();
+				if ( currentHash ) {
+					// Expand Hash
+					currentState = History.extractState(currentHash||document.location.href,true);
+					if ( currentState ) {
+						// We were able to parse it, it must be a State!
+						// Let's forward to replaceState
+						//History.debug('History.onPopState: state anchor', currentHash, currentState);
+						History.replaceState(currentState.data, currentState.title, currentState.url, false);
+					}
+					else {
+						// Traditional Anchor
+						//History.debug('History.onPopState: traditional anchor', currentHash);
+						History.Adapter.trigger(window,'anchorchange');
+						History.busy(false);
+					}
+
+					// We don't care for hashes
+					History.expectedStateId = false;
+					return false;
+				}
+
+				// Ensure
+				stateId = History.Adapter.extractEventData('state',event,extra) || false;
+
+				// Fetch State
+				if ( stateId ) {
+					// Vanilla: Back/forward button was used
+					newState = History.getStateById(stateId);
+				}
+				else if ( History.expectedStateId ) {
+					// Vanilla: A new state was pushed, and popstate was called manually
+					newState = History.getStateById(History.expectedStateId);
+				}
+				else {
+					// Initial State
+					newState = History.extractState(document.location.href);
+				}
+
+				// The State did not exist in our store
+				if ( !newState ) {
+					// Regenerate the State
+					newState = History.createStateObject(null,null,document.location.href);
+				}
+
+				// Clean
+				History.expectedStateId = false;
+
+				// Check if we are the same state
+				if ( History.isLastSavedState(newState) ) {
+					// There has been no change (just the page's hash has finally propagated)
+					//History.debug('History.onPopState: no change', newState, History.savedStates);
+					History.busy(false);
+					return false;
+				}
+
+				// Store the State
+				History.storeState(newState);
+				History.saveState(newState);
+
+				// Force update of the title
+				History.setTitle(newState);
+
+				// Fire Our Event
+				History.Adapter.trigger(window,'statechange');
+				History.busy(false);
+
+				// Return true
+				return true;
+			};
+			History.Adapter.bind(window,'popstate',History.onPopState);
+
+			/**
+			 * History.pushState(data,title,url)
+			 * Add a new State to the history object, become it, and trigger onpopstate
+			 * We have to trigger for HTML4 compatibility
+			 * @param {object} data
+			 * @param {string} title
+			 * @param {string} url
+			 * @return {true}
+			 */
+			History.pushState = function(data,title,url,queue){
+				//History.debug('History.pushState: called', arguments);
+
+				// Check the State
+				if ( History.getHashByUrl(url) && History.emulated.pushState ) {
+					throw new Error('History.js does not support states with fragement-identifiers (hashes/anchors).');
+				}
+
+				// Handle Queueing
+				if ( queue !== false && History.busy() ) {
+					// Wait + Push to Queue
+					//History.debug('History.pushState: we must wait', arguments);
+					History.pushQueue({
+						scope: History,
+						callback: History.pushState,
+						args: arguments,
+						queue: queue
+					});
+					return false;
+				}
+
+				// Make Busy + Continue
+				History.busy(true);
+
+				// Create the newState
+				var newState = History.createStateObject(data,title,url);
+
+				// Check it
+				if ( History.isLastSavedState(newState) ) {
+					// Won't be a change
+					History.busy(false);
+				}
+				else {
+					// Store the newState
+					History.storeState(newState);
+					History.expectedStateId = newState.id;
+
+					// Push the newState
+					history.pushState(newState.id,newState.title,newState.url);
+
+					// Fire HTML5 Event
+					History.Adapter.trigger(window,'popstate');
+				}
+
+				// End pushState closure
+				return true;
+			};
+
+			/**
+			 * History.replaceState(data,title,url)
+			 * Replace the State and trigger onpopstate
+			 * We have to trigger for HTML4 compatibility
+			 * @param {object} data
+			 * @param {string} title
+			 * @param {string} url
+			 * @return {true}
+			 */
+			History.replaceState = function(data,title,url,queue){
+				//History.debug('History.replaceState: called', arguments);
+
+				// Check the State
+				if ( History.getHashByUrl(url) && History.emulated.pushState ) {
+					throw new Error('History.js does not support states with fragement-identifiers (hashes/anchors).');
+				}
+
+				// Handle Queueing
+				if ( queue !== false && History.busy() ) {
+					// Wait + Push to Queue
+					//History.debug('History.replaceState: we must wait', arguments);
+					History.pushQueue({
+						scope: History,
+						callback: History.replaceState,
+						args: arguments,
+						queue: queue
+					});
+					return false;
+				}
+
+				// Make Busy + Continue
+				History.busy(true);
+
+				// Create the newState
+				var newState = History.createStateObject(data,title,url);
+
+				// Check it
+				if ( History.isLastSavedState(newState) ) {
+					// Won't be a change
+					History.busy(false);
+				}
+				else {
+					// Store the newState
+					History.storeState(newState);
+					History.expectedStateId = newState.id;
+
+					// Push the newState
+					history.replaceState(newState.id,newState.title,newState.url);
+
+					// Fire HTML5 Event
+					History.Adapter.trigger(window,'popstate');
+				}
+
+				// End replaceState closure
+				return true;
+			};
+
+		} // !History.emulated.pushState
+
+
+		// ====================================================================
+		// Initialise
+
+		/**
+		 * Load the Store
+		 */
+		if ( sessionStorage ) {
+			// Fetch
+			try {
+				History.store = JSON.parse(sessionStorage.getItem('History.store'))||{};
+			}
+			catch ( err ) {
+				History.store = {};
+			}
+
+			// Normalize
+			History.normalizeStore();
+		}
+		else {
+			// Default Load
+			History.store = {};
+			History.normalizeStore();
+		}
+
+		/**
+		 * Clear Intervals on exit to prevent memory leaks
+		 */
+		History.Adapter.bind(window,"beforeunload",History.clearAllIntervals);
+		History.Adapter.bind(window,"unload",History.clearAllIntervals);
+
+		/**
+		 * Create the initial State
+		 */
+		History.saveState(History.storeState(History.extractState(document.location.href,true)));
+
+		/**
+		 * Bind for Saving Store
+		 */
+		if ( sessionStorage ) {
+			// When the page is closed
+			History.onUnload = function(){
+				// Prepare
+				var	currentStore, item;
+
+				// Fetch
+				try {
+					currentStore = JSON.parse(sessionStorage.getItem('History.store'))||{};
+				}
+				catch ( err ) {
+					currentStore = {};
+				}
+
+				// Ensure
+				currentStore.idToState = currentStore.idToState || {};
+				currentStore.urlToId = currentStore.urlToId || {};
+				currentStore.stateToId = currentStore.stateToId || {};
+
+				// Sync
+				for ( item in History.idToState ) {
+					if ( !History.idToState.hasOwnProperty(item) ) {
+						continue;
+					}
+					currentStore.idToState[item] = History.idToState[item];
+				}
+				for ( item in History.urlToId ) {
+					if ( !History.urlToId.hasOwnProperty(item) ) {
+						continue;
+					}
+					currentStore.urlToId[item] = History.urlToId[item];
+				}
+				for ( item in History.stateToId ) {
+					if ( !History.stateToId.hasOwnProperty(item) ) {
+						continue;
+					}
+					currentStore.stateToId[item] = History.stateToId[item];
+				}
+
+				// Update
+				History.store = currentStore;
+				History.normalizeStore();
+
+				// Store
+				sessionStorage.setItem('History.store',JSON.stringify(currentStore));
+			};
+
+			// For Internet Explorer
+			History.intervalList.push(setInterval(History.onUnload,History.options.storeInterval));
+			
+			// For Other Browsers
+			History.Adapter.bind(window,'beforeunload',History.onUnload);
+			History.Adapter.bind(window,'unload',History.onUnload);
+			
+			// Both are enabled for consistency
+		}
+
+		// Non-Native pushState Implementation
+		if ( !History.emulated.pushState ) {
+			// Be aware, the following is only for native pushState implementations
+			// If you are wanting to include something for all browsers
+			// Then include it above this if block
+
+			/**
+			 * Setup Safari Fix
+			 */
+			if ( History.bugs.safariPoll ) {
+				History.intervalList.push(setInterval(History.safariStatePoll, History.options.safariPollInterval));
+			}
+
+			/**
+			 * Ensure Cross Browser Compatibility
+			 */
+			if ( navigator.vendor === 'Apple Computer, Inc.' || (navigator.appCodeName||'') === 'Mozilla' ) {
+				/**
+				 * Fix Safari HashChange Issue
+				 */
+
+				// Setup Alias
+				History.Adapter.bind(window,'hashchange',function(){
+					History.Adapter.trigger(window,'popstate');
+				});
+
+				// Initialise Alias
+				if ( History.getHash() ) {
+					History.Adapter.onDomLoad(function(){
+						History.Adapter.trigger(window,'hashchange');
+					});
+				}
+			}
+
+		} // !History.emulated.pushState
+
+
+	}; // History.initCore
+
+	// Try and Initialise History
+	History.init();
+
+})(window);
+/**
+ * History.js jQuery Adapter
+ * @author Benjamin Arthur Lupton <contact@balupton.com>
+ * @copyright 2010-2011 Benjamin Arthur Lupton <contact@balupton.com>
+ * @license New BSD License <http://creativecommons.org/licenses/BSD/>
+ */
+
+// Closure
+(function(window,undefined){
+	"use strict";
+
+	// Localise Globals
+	var
+		History = window.History = window.History||{},
+		jQuery = window.jQuery;
+
+	// Check Existence
+	if ( typeof History.Adapter !== 'undefined' ) {
+		throw new Error('History.js Adapter has already been loaded...');
+	}
+
+	// Add the Adapter
+	History.Adapter = {
+		/**
+		 * History.Adapter.bind(el,event,callback)
+		 * @param {Element|string} el
+		 * @param {string} event - custom and standard events
+		 * @param {function} callback
+		 * @return {void}
+		 */
+		bind: function(el,event,callback){
+			jQuery(el).bind(event,callback);
+		},
+
+		/**
+		 * History.Adapter.trigger(el,event)
+		 * @param {Element|string} el
+		 * @param {string} event - custom and standard events
+		 * @param {Object=} extra - a object of extra event data (optional)
+		 * @return {void}
+		 */
+		trigger: function(el,event,extra){
+			jQuery(el).trigger(event,extra);
+		},
+
+		/**
+		 * History.Adapter.extractEventData(key,event,extra)
+		 * @param {string} key - key for the event data to extract
+		 * @param {string} event - custom and standard events
+		 * @param {Object=} extra - a object of extra event data (optional)
+		 * @return {mixed}
+		 */
+		extractEventData: function(key,event,extra){
+			// jQuery Native then jQuery Custom
+			var result = (event && event.originalEvent && event.originalEvent[key]) || (extra && extra[key]) || undefined;
+
+			// Return
+			return result;
+		},
+
+		/**
+		 * History.Adapter.onDomLoad(callback)
+		 * @param {function} callback
+		 * @return {void}
+		 */
+		onDomLoad: function(callback) {
+			jQuery(callback);
+		}
+	};
+
+	// Try and Initialise History
+	if ( typeof History.init !== 'undefined' ) {
+		History.init();
+	}
+
+})(window);
+
+/*!
+ * jQuery UI Core 1.10.2
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/category/ui-core/
+ */
+(function( $, undefined ) {
+
+var uuid = 0,
+	runiqueId = /^ui-id-\d+$/;
+
+// $.ui might exist from components with no dependencies, e.g., $.ui.position
+$.ui = $.ui || {};
+
+$.extend( $.ui, {
+	version: "1.10.2",
+
+	keyCode: {
+		BACKSPACE: 8,
+		COMMA: 188,
+		DELETE: 46,
+		DOWN: 40,
+		END: 35,
+		ENTER: 13,
+		ESCAPE: 27,
+		HOME: 36,
+		LEFT: 37,
+		NUMPAD_ADD: 107,
+		NUMPAD_DECIMAL: 110,
+		NUMPAD_DIVIDE: 111,
+		NUMPAD_ENTER: 108,
+		NUMPAD_MULTIPLY: 106,
+		NUMPAD_SUBTRACT: 109,
+		PAGE_DOWN: 34,
+		PAGE_UP: 33,
+		PERIOD: 190,
+		RIGHT: 39,
+		SPACE: 32,
+		TAB: 9,
+		UP: 38
+	}
+});
+
+// plugins
+$.fn.extend({
+	focus: (function( orig ) {
+		return function( delay, fn ) {
+			return typeof delay === "number" ?
+				this.each(function() {
+					var elem = this;
+					setTimeout(function() {
+						$( elem ).focus();
+						if ( fn ) {
+							fn.call( elem );
+						}
+					}, delay );
+				}) :
+				orig.apply( this, arguments );
+		};
+	})( $.fn.focus ),
+
+	scrollParent: function() {
+		var scrollParent;
+		if (($.ui.ie && (/(static|relative)/).test(this.css("position"))) || (/absolute/).test(this.css("position"))) {
+			scrollParent = this.parents().filter(function() {
+				return (/(relative|absolute|fixed)/).test($.css(this,"position")) && (/(auto|scroll)/).test($.css(this,"overflow")+$.css(this,"overflow-y")+$.css(this,"overflow-x"));
+			}).eq(0);
+		} else {
+			scrollParent = this.parents().filter(function() {
+				return (/(auto|scroll)/).test($.css(this,"overflow")+$.css(this,"overflow-y")+$.css(this,"overflow-x"));
+			}).eq(0);
+		}
+
+		return (/fixed/).test(this.css("position")) || !scrollParent.length ? $(document) : scrollParent;
+	},
+
+	zIndex: function( zIndex ) {
+		if ( zIndex !== undefined ) {
+			return this.css( "zIndex", zIndex );
+		}
+
+		if ( this.length ) {
+			var elem = $( this[ 0 ] ), position, value;
+			while ( elem.length && elem[ 0 ] !== document ) {
+				// Ignore z-index if position is set to a value where z-index is ignored by the browser
+				// This makes behavior of this function consistent across browsers
+				// WebKit always returns auto if the element is positioned
+				position = elem.css( "position" );
+				if ( position === "absolute" || position === "relative" || position === "fixed" ) {
+					// IE returns 0 when zIndex is not specified
+					// other browsers return a string
+					// we ignore the case of nested elements with an explicit value of 0
+					// <div style="z-index: -10;"><div style="z-index: 0;"></div></div>
+					value = parseInt( elem.css( "zIndex" ), 10 );
+					if ( !isNaN( value ) && value !== 0 ) {
+						return value;
+					}
+				}
+				elem = elem.parent();
+			}
+		}
+
+		return 0;
+	},
+
+	uniqueId: function() {
+		return this.each(function() {
+			if ( !this.id ) {
+				this.id = "ui-id-" + (++uuid);
+			}
+		});
+	},
+
+	removeUniqueId: function() {
+		return this.each(function() {
+			if ( runiqueId.test( this.id ) ) {
+				$( this ).removeAttr( "id" );
+			}
+		});
+	}
+});
+
+// selectors
+function focusable( element, isTabIndexNotNaN ) {
+	var map, mapName, img,
+		nodeName = element.nodeName.toLowerCase();
+	if ( "area" === nodeName ) {
+		map = element.parentNode;
+		mapName = map.name;
+		if ( !element.href || !mapName || map.nodeName.toLowerCase() !== "map" ) {
+			return false;
+		}
+		img = $( "img[usemap=#" + mapName + "]" )[0];
+		return !!img && visible( img );
+	}
+	return ( /input|select|textarea|button|object/.test( nodeName ) ?
+		!element.disabled :
+		"a" === nodeName ?
+			element.href || isTabIndexNotNaN :
+			isTabIndexNotNaN) &&
+		// the element and all of its ancestors must be visible
+		visible( element );
+}
+
+function visible( element ) {
+	return $.expr.filters.visible( element ) &&
+		!$( element ).parents().addBack().filter(function() {
+			return $.css( this, "visibility" ) === "hidden";
+		}).length;
+}
+
+$.extend( $.expr[ ":" ], {
+	data: $.expr.createPseudo ?
+		$.expr.createPseudo(function( dataName ) {
+			return function( elem ) {
+				return !!$.data( elem, dataName );
+			};
+		}) :
+		// support: jQuery <1.8
+		function( elem, i, match ) {
+			return !!$.data( elem, match[ 3 ] );
+		},
+
+	focusable: function( element ) {
+		return focusable( element, !isNaN( $.attr( element, "tabindex" ) ) );
+	},
+
+	tabbable: function( element ) {
+		var tabIndex = $.attr( element, "tabindex" ),
+			isTabIndexNaN = isNaN( tabIndex );
+		return ( isTabIndexNaN || tabIndex >= 0 ) && focusable( element, !isTabIndexNaN );
+	}
+});
+
+// support: jQuery <1.8
+if ( !$( "<a>" ).outerWidth( 1 ).jquery ) {
+	$.each( [ "Width", "Height" ], function( i, name ) {
+		var side = name === "Width" ? [ "Left", "Right" ] : [ "Top", "Bottom" ],
+			type = name.toLowerCase(),
+			orig = {
+				innerWidth: $.fn.innerWidth,
+				innerHeight: $.fn.innerHeight,
+				outerWidth: $.fn.outerWidth,
+				outerHeight: $.fn.outerHeight
+			};
+
+		function reduce( elem, size, border, margin ) {
+			$.each( side, function() {
+				size -= parseFloat( $.css( elem, "padding" + this ) ) || 0;
+				if ( border ) {
+					size -= parseFloat( $.css( elem, "border" + this + "Width" ) ) || 0;
+				}
+				if ( margin ) {
+					size -= parseFloat( $.css( elem, "margin" + this ) ) || 0;
+				}
+			});
+			return size;
+		}
+
+		$.fn[ "inner" + name ] = function( size ) {
+			if ( size === undefined ) {
+				return orig[ "inner" + name ].call( this );
+			}
+
+			return this.each(function() {
+				$( this ).css( type, reduce( this, size ) + "px" );
+			});
+		};
+
+		$.fn[ "outer" + name] = function( size, margin ) {
+			if ( typeof size !== "number" ) {
+				return orig[ "outer" + name ].call( this, size );
+			}
+
+			return this.each(function() {
+				$( this).css( type, reduce( this, size, true, margin ) + "px" );
+			});
+		};
+	});
+}
+
+// support: jQuery <1.8
+if ( !$.fn.addBack ) {
+	$.fn.addBack = function( selector ) {
+		return this.add( selector == null ?
+			this.prevObject : this.prevObject.filter( selector )
+		);
+	};
+}
+
+// support: jQuery 1.6.1, 1.6.2 (http://bugs.jquery.com/ticket/9413)
+if ( $( "<a>" ).data( "a-b", "a" ).removeData( "a-b" ).data( "a-b" ) ) {
+	$.fn.removeData = (function( removeData ) {
+		return function( key ) {
+			if ( arguments.length ) {
+				return removeData.call( this, $.camelCase( key ) );
+			} else {
+				return removeData.call( this );
+			}
+		};
+	})( $.fn.removeData );
+}
+
+
+
+
+
+// deprecated
+$.ui.ie = !!/msie [\w.]+/.exec( navigator.userAgent.toLowerCase() );
+
+$.support.selectstart = "onselectstart" in document.createElement( "div" );
+$.fn.extend({
+	disableSelection: function() {
+		return this.bind( ( $.support.selectstart ? "selectstart" : "mousedown" ) +
+			".ui-disableSelection", function( event ) {
+				event.preventDefault();
+			});
+	},
+
+	enableSelection: function() {
+		return this.unbind( ".ui-disableSelection" );
+	}
+});
+
+$.extend( $.ui, {
+	// $.ui.plugin is deprecated.  Use the proxy pattern instead.
+	plugin: {
+		add: function( module, option, set ) {
+			var i,
+				proto = $.ui[ module ].prototype;
+			for ( i in set ) {
+				proto.plugins[ i ] = proto.plugins[ i ] || [];
+				proto.plugins[ i ].push( [ option, set[ i ] ] );
+			}
+		},
+		call: function( instance, name, args ) {
+			var i,
+				set = instance.plugins[ name ];
+			if ( !set || !instance.element[ 0 ].parentNode || instance.element[ 0 ].parentNode.nodeType === 11 ) {
+				return;
+			}
+
+			for ( i = 0; i < set.length; i++ ) {
+				if ( instance.options[ set[ i ][ 0 ] ] ) {
+					set[ i ][ 1 ].apply( instance.element, args );
+				}
+			}
+		}
+	},
+
+	// only used by resizable
+	hasScroll: function( el, a ) {
+
+		//If overflow is hidden, the element might have extra content, but the user wants to hide it
+		if ( $( el ).css( "overflow" ) === "hidden") {
+			return false;
+		}
+
+		var scroll = ( a && a === "left" ) ? "scrollLeft" : "scrollTop",
+			has = false;
+
+		if ( el[ scroll ] > 0 ) {
+			return true;
+		}
+
+		// TODO: determine which cases actually cause this to happen
+		// if the element doesn't have the scroll set, see if it's possible to
+		// set the scroll
+		el[ scroll ] = 1;
+		has = ( el[ scroll ] > 0 );
+		el[ scroll ] = 0;
+		return has;
+	}
+});
+
+})( jQuery );
+/*!
+ * jQuery UI Widget 1.10.2
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/jQuery.widget/
+ */
+(function( $, undefined ) {
+
+var uuid = 0,
+	slice = Array.prototype.slice,
+	_cleanData = $.cleanData;
+$.cleanData = function( elems ) {
+	for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
+		try {
+			$( elem ).triggerHandler( "remove" );
+		// http://bugs.jquery.com/ticket/8235
+		} catch( e ) {}
+	}
+	_cleanData( elems );
+};
+
+$.widget = function( name, base, prototype ) {
+	var fullName, existingConstructor, constructor, basePrototype,
+		// proxiedPrototype allows the provided prototype to remain unmodified
+		// so that it can be used as a mixin for multiple widgets (#8876)
+		proxiedPrototype = {},
+		namespace = name.split( "." )[ 0 ];
+
+	name = name.split( "." )[ 1 ];
+	fullName = namespace + "-" + name;
+
+	if ( !prototype ) {
+		prototype = base;
+		base = $.Widget;
+	}
+
+	// create selector for plugin
+	$.expr[ ":" ][ fullName.toLowerCase() ] = function( elem ) {
+		return !!$.data( elem, fullName );
+	};
+
+	$[ namespace ] = $[ namespace ] || {};
+	existingConstructor = $[ namespace ][ name ];
+	constructor = $[ namespace ][ name ] = function( options, element ) {
+		// allow instantiation without "new" keyword
+		if ( !this._createWidget ) {
+			return new constructor( options, element );
+		}
+
+		// allow instantiation without initializing for simple inheritance
+		// must use "new" keyword (the code above always passes args)
+		if ( arguments.length ) {
+			this._createWidget( options, element );
+		}
+	};
+	// extend with the existing constructor to carry over any static properties
+	$.extend( constructor, existingConstructor, {
+		version: prototype.version,
+		// copy the object used to create the prototype in case we need to
+		// redefine the widget later
+		_proto: $.extend( {}, prototype ),
+		// track widgets that inherit from this widget in case this widget is
+		// redefined after a widget inherits from it
+		_childConstructors: []
+	});
+
+	basePrototype = new base();
+	// we need to make the options hash a property directly on the new instance
+	// otherwise we'll modify the options hash on the prototype that we're
+	// inheriting from
+	basePrototype.options = $.widget.extend( {}, basePrototype.options );
+	$.each( prototype, function( prop, value ) {
+		if ( !$.isFunction( value ) ) {
+			proxiedPrototype[ prop ] = value;
+			return;
+		}
+		proxiedPrototype[ prop ] = (function() {
+			var _super = function() {
+					return base.prototype[ prop ].apply( this, arguments );
+				},
+				_superApply = function( args ) {
+					return base.prototype[ prop ].apply( this, args );
+				};
+			return function() {
+				var __super = this._super,
+					__superApply = this._superApply,
+					returnValue;
+
+				this._super = _super;
+				this._superApply = _superApply;
+
+				returnValue = value.apply( this, arguments );
+
+				this._super = __super;
+				this._superApply = __superApply;
+
+				return returnValue;
+			};
+		})();
+	});
+	constructor.prototype = $.widget.extend( basePrototype, {
+		// TODO: remove support for widgetEventPrefix
+		// always use the name + a colon as the prefix, e.g., draggable:start
+		// don't prefix for widgets that aren't DOM-based
+		widgetEventPrefix: existingConstructor ? basePrototype.widgetEventPrefix : name
+	}, proxiedPrototype, {
+		constructor: constructor,
+		namespace: namespace,
+		widgetName: name,
+		widgetFullName: fullName
+	});
+
+	// If this widget is being redefined then we need to find all widgets that
+	// are inheriting from it and redefine all of them so that they inherit from
+	// the new version of this widget. We're essentially trying to replace one
+	// level in the prototype chain.
+	if ( existingConstructor ) {
+		$.each( existingConstructor._childConstructors, function( i, child ) {
+			var childPrototype = child.prototype;
+
+			// redefine the child widget using the same prototype that was
+			// originally used, but inherit from the new version of the base
+			$.widget( childPrototype.namespace + "." + childPrototype.widgetName, constructor, child._proto );
+		});
+		// remove the list of existing child constructors from the old constructor
+		// so the old child constructors can be garbage collected
+		delete existingConstructor._childConstructors;
+	} else {
+		base._childConstructors.push( constructor );
+	}
+
+	$.widget.bridge( name, constructor );
+};
+
+$.widget.extend = function( target ) {
+	var input = slice.call( arguments, 1 ),
+		inputIndex = 0,
+		inputLength = input.length,
+		key,
+		value;
+	for ( ; inputIndex < inputLength; inputIndex++ ) {
+		for ( key in input[ inputIndex ] ) {
+			value = input[ inputIndex ][ key ];
+			if ( input[ inputIndex ].hasOwnProperty( key ) && value !== undefined ) {
+				// Clone objects
+				if ( $.isPlainObject( value ) ) {
+					target[ key ] = $.isPlainObject( target[ key ] ) ?
+						$.widget.extend( {}, target[ key ], value ) :
+						// Don't extend strings, arrays, etc. with objects
+						$.widget.extend( {}, value );
+				// Copy everything else by reference
+				} else {
+					target[ key ] = value;
+				}
+			}
+		}
+	}
+	return target;
+};
+
+$.widget.bridge = function( name, object ) {
+	var fullName = object.prototype.widgetFullName || name;
+	$.fn[ name ] = function( options ) {
+		var isMethodCall = typeof options === "string",
+			args = slice.call( arguments, 1 ),
+			returnValue = this;
+
+		// allow multiple hashes to be passed on init
+		options = !isMethodCall && args.length ?
+			$.widget.extend.apply( null, [ options ].concat(args) ) :
+			options;
+
+		if ( isMethodCall ) {
+			this.each(function() {
+				var methodValue,
+					instance = $.data( this, fullName );
+				if ( !instance ) {
+					return $.error( "cannot call methods on " + name + " prior to initialization; " +
+						"attempted to call method '" + options + "'" );
+				}
+				if ( !$.isFunction( instance[options] ) || options.charAt( 0 ) === "_" ) {
+					return $.error( "no such method '" + options + "' for " + name + " widget instance" );
+				}
+				methodValue = instance[ options ].apply( instance, args );
+				if ( methodValue !== instance && methodValue !== undefined ) {
+					returnValue = methodValue && methodValue.jquery ?
+						returnValue.pushStack( methodValue.get() ) :
+						methodValue;
+					return false;
+				}
+			});
+		} else {
+			this.each(function() {
+				var instance = $.data( this, fullName );
+				if ( instance ) {
+					instance.option( options || {} )._init();
+				} else {
+					$.data( this, fullName, new object( options, this ) );
+				}
+			});
+		}
+
+		return returnValue;
+	};
+};
+
+$.Widget = function( /* options, element */ ) {};
+$.Widget._childConstructors = [];
+
+$.Widget.prototype = {
+	widgetName: "widget",
+	widgetEventPrefix: "",
+	defaultElement: "<div>",
+	options: {
+		disabled: false,
+
+		// callbacks
+		create: null
+	},
+	_createWidget: function( options, element ) {
+		element = $( element || this.defaultElement || this )[ 0 ];
+		this.element = $( element );
+		this.uuid = uuid++;
+		this.eventNamespace = "." + this.widgetName + this.uuid;
+		this.options = $.widget.extend( {},
+			this.options,
+			this._getCreateOptions(),
+			options );
+
+		this.bindings = $();
+		this.hoverable = $();
+		this.focusable = $();
+
+		if ( element !== this ) {
+			$.data( element, this.widgetFullName, this );
+			this._on( true, this.element, {
+				remove: function( event ) {
+					if ( event.target === element ) {
+						this.destroy();
+					}
+				}
+			});
+			this.document = $( element.style ?
+				// element within the document
+				element.ownerDocument :
+				// element is window or document
+				element.document || element );
+			this.window = $( this.document[0].defaultView || this.document[0].parentWindow );
+		}
+
+		this._create();
+		this._trigger( "create", null, this._getCreateEventData() );
+		this._init();
+	},
+	_getCreateOptions: $.noop,
+	_getCreateEventData: $.noop,
+	_create: $.noop,
+	_init: $.noop,
+
+	destroy: function() {
+		this._destroy();
+		// we can probably remove the unbind calls in 2.0
+		// all event bindings should go through this._on()
+		this.element
+			.unbind( this.eventNamespace )
+			// 1.9 BC for #7810
+			// TODO remove dual storage
+			.removeData( this.widgetName )
+			.removeData( this.widgetFullName )
+			// support: jquery <1.6.3
+			// http://bugs.jquery.com/ticket/9413
+			.removeData( $.camelCase( this.widgetFullName ) );
+		this.widget()
+			.unbind( this.eventNamespace )
+			.removeAttr( "aria-disabled" )
+			.removeClass(
+				this.widgetFullName + "-disabled " +
+				"ui-state-disabled" );
+
+		// clean up events and states
+		this.bindings.unbind( this.eventNamespace );
+		this.hoverable.removeClass( "ui-state-hover" );
+		this.focusable.removeClass( "ui-state-focus" );
+	},
+	_destroy: $.noop,
+
+	widget: function() {
+		return this.element;
+	},
+
+	option: function( key, value ) {
+		var options = key,
+			parts,
+			curOption,
+			i;
+
+		if ( arguments.length === 0 ) {
+			// don't return a reference to the internal hash
+			return $.widget.extend( {}, this.options );
+		}
+
+		if ( typeof key === "string" ) {
+			// handle nested keys, e.g., "foo.bar" => { foo: { bar: ___ } }
+			options = {};
+			parts = key.split( "." );
+			key = parts.shift();
+			if ( parts.length ) {
+				curOption = options[ key ] = $.widget.extend( {}, this.options[ key ] );
+				for ( i = 0; i < parts.length - 1; i++ ) {
+					curOption[ parts[ i ] ] = curOption[ parts[ i ] ] || {};
+					curOption = curOption[ parts[ i ] ];
+				}
+				key = parts.pop();
+				if ( value === undefined ) {
+					return curOption[ key ] === undefined ? null : curOption[ key ];
+				}
+				curOption[ key ] = value;
+			} else {
+				if ( value === undefined ) {
+					return this.options[ key ] === undefined ? null : this.options[ key ];
+				}
+				options[ key ] = value;
+			}
+		}
+
+		this._setOptions( options );
+
+		return this;
+	},
+	_setOptions: function( options ) {
+		var key;
+
+		for ( key in options ) {
+			this._setOption( key, options[ key ] );
+		}
+
+		return this;
+	},
+	_setOption: function( key, value ) {
+		this.options[ key ] = value;
+
+		if ( key === "disabled" ) {
+			this.widget()
+				.toggleClass( this.widgetFullName + "-disabled ui-state-disabled", !!value )
+				.attr( "aria-disabled", value );
+			this.hoverable.removeClass( "ui-state-hover" );
+			this.focusable.removeClass( "ui-state-focus" );
+		}
+
+		return this;
+	},
+
+	enable: function() {
+		return this._setOption( "disabled", false );
+	},
+	disable: function() {
+		return this._setOption( "disabled", true );
+	},
+
+	_on: function( suppressDisabledCheck, element, handlers ) {
+		var delegateElement,
+			instance = this;
+
+		// no suppressDisabledCheck flag, shuffle arguments
+		if ( typeof suppressDisabledCheck !== "boolean" ) {
+			handlers = element;
+			element = suppressDisabledCheck;
+			suppressDisabledCheck = false;
+		}
+
+		// no element argument, shuffle and use this.element
+		if ( !handlers ) {
+			handlers = element;
+			element = this.element;
+			delegateElement = this.widget();
+		} else {
+			// accept selectors, DOM elements
+			element = delegateElement = $( element );
+			this.bindings = this.bindings.add( element );
+		}
+
+		$.each( handlers, function( event, handler ) {
+			function handlerProxy() {
+				// allow widgets to customize the disabled handling
+				// - disabled as an array instead of boolean
+				// - disabled class as method for disabling individual parts
+				if ( !suppressDisabledCheck &&
+						( instance.options.disabled === true ||
+							$( this ).hasClass( "ui-state-disabled" ) ) ) {
+					return;
+				}
+				return ( typeof handler === "string" ? instance[ handler ] : handler )
+					.apply( instance, arguments );
+			}
+
+			// copy the guid so direct unbinding works
+			if ( typeof handler !== "string" ) {
+				handlerProxy.guid = handler.guid =
+					handler.guid || handlerProxy.guid || $.guid++;
+			}
+
+			var match = event.match( /^(\w+)\s*(.*)$/ ),
+				eventName = match[1] + instance.eventNamespace,
+				selector = match[2];
+			if ( selector ) {
+				delegateElement.delegate( selector, eventName, handlerProxy );
+			} else {
+				element.bind( eventName, handlerProxy );
+			}
+		});
+	},
+
+	_off: function( element, eventName ) {
+		eventName = (eventName || "").split( " " ).join( this.eventNamespace + " " ) + this.eventNamespace;
+		element.unbind( eventName ).undelegate( eventName );
+	},
+
+	_delay: function( handler, delay ) {
+		function handlerProxy() {
+			return ( typeof handler === "string" ? instance[ handler ] : handler )
+				.apply( instance, arguments );
+		}
+		var instance = this;
+		return setTimeout( handlerProxy, delay || 0 );
+	},
+
+	_hoverable: function( element ) {
+		this.hoverable = this.hoverable.add( element );
+		this._on( element, {
+			mouseenter: function( event ) {
+				$( event.currentTarget ).addClass( "ui-state-hover" );
+			},
+			mouseleave: function( event ) {
+				$( event.currentTarget ).removeClass( "ui-state-hover" );
+			}
+		});
+	},
+
+	_focusable: function( element ) {
+		this.focusable = this.focusable.add( element );
+		this._on( element, {
+			focusin: function( event ) {
+				$( event.currentTarget ).addClass( "ui-state-focus" );
+			},
+			focusout: function( event ) {
+				$( event.currentTarget ).removeClass( "ui-state-focus" );
+			}
+		});
+	},
+
+	_trigger: function( type, event, data ) {
+		var prop, orig,
+			callback = this.options[ type ];
+
+		data = data || {};
+		event = $.Event( event );
+		event.type = ( type === this.widgetEventPrefix ?
+			type :
+			this.widgetEventPrefix + type ).toLowerCase();
+		// the original event may come from any element
+		// so we need to reset the target on the new event
+		event.target = this.element[ 0 ];
+
+		// copy original event properties over to the new event
+		orig = event.originalEvent;
+		if ( orig ) {
+			for ( prop in orig ) {
+				if ( !( prop in event ) ) {
+					event[ prop ] = orig[ prop ];
+				}
+			}
+		}
+
+		this.element.trigger( event, data );
+		return !( $.isFunction( callback ) &&
+			callback.apply( this.element[0], [ event ].concat( data ) ) === false ||
+			event.isDefaultPrevented() );
+	}
+};
+
+$.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
+	$.Widget.prototype[ "_" + method ] = function( element, options, callback ) {
+		if ( typeof options === "string" ) {
+			options = { effect: options };
+		}
+		var hasOptions,
+			effectName = !options ?
+				method :
+				options === true || typeof options === "number" ?
+					defaultEffect :
+					options.effect || defaultEffect;
+		options = options || {};
+		if ( typeof options === "number" ) {
+			options = { duration: options };
+		}
+		hasOptions = !$.isEmptyObject( options );
+		options.complete = callback;
+		if ( options.delay ) {
+			element.delay( options.delay );
+		}
+		if ( hasOptions && $.effects && $.effects.effect[ effectName ] ) {
+			element[ method ]( options );
+		} else if ( effectName !== method && element[ effectName ] ) {
+			element[ effectName ]( options.duration, options.easing, callback );
+		} else {
+			element.queue(function( next ) {
+				$( this )[ method ]();
+				if ( callback ) {
+					callback.call( element[ 0 ] );
+				}
+				next();
+			});
+		}
+	};
+});
+
+})( jQuery );
+/*!
+ * jQuery UI Position 1.10.2
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/position/
+ */
+(function( $, undefined ) {
+
+$.ui = $.ui || {};
+
+var cachedScrollbarWidth,
+	max = Math.max,
+	abs = Math.abs,
+	round = Math.round,
+	rhorizontal = /left|center|right/,
+	rvertical = /top|center|bottom/,
+	roffset = /[\+\-]\d+(\.[\d]+)?%?/,
+	rposition = /^\w+/,
+	rpercent = /%$/,
+	_position = $.fn.position;
+
+function getOffsets( offsets, width, height ) {
+	return [
+		parseFloat( offsets[ 0 ] ) * ( rpercent.test( offsets[ 0 ] ) ? width / 100 : 1 ),
+		parseFloat( offsets[ 1 ] ) * ( rpercent.test( offsets[ 1 ] ) ? height / 100 : 1 )
+	];
+}
+
+function parseCss( element, property ) {
+	return parseInt( $.css( element, property ), 10 ) || 0;
+}
+
+function getDimensions( elem ) {
+	var raw = elem[0];
+	if ( raw.nodeType === 9 ) {
+		return {
+			width: elem.width(),
+			height: elem.height(),
+			offset: { top: 0, left: 0 }
+		};
+	}
+	if ( $.isWindow( raw ) ) {
+		return {
+			width: elem.width(),
+			height: elem.height(),
+			offset: { top: elem.scrollTop(), left: elem.scrollLeft() }
+		};
+	}
+	if ( raw.preventDefault ) {
+		return {
+			width: 0,
+			height: 0,
+			offset: { top: raw.pageY, left: raw.pageX }
+		};
+	}
+	return {
+		width: elem.outerWidth(),
+		height: elem.outerHeight(),
+		offset: elem.offset()
+	};
+}
+
+$.position = {
+	scrollbarWidth: function() {
+		if ( cachedScrollbarWidth !== undefined ) {
+			return cachedScrollbarWidth;
+		}
+		var w1, w2,
+			div = $( "<div style='display:block;width:50px;height:50px;overflow:hidden;'><div style='height:100px;width:auto;'></div></div>" ),
+			innerDiv = div.children()[0];
+
+		$( "body" ).append( div );
+		w1 = innerDiv.offsetWidth;
+		div.css( "overflow", "scroll" );
+
+		w2 = innerDiv.offsetWidth;
+
+		if ( w1 === w2 ) {
+			w2 = div[0].clientWidth;
+		}
+
+		div.remove();
+
+		return (cachedScrollbarWidth = w1 - w2);
+	},
+	getScrollInfo: function( within ) {
+		var overflowX = within.isWindow ? "" : within.element.css( "overflow-x" ),
+			overflowY = within.isWindow ? "" : within.element.css( "overflow-y" ),
+			hasOverflowX = overflowX === "scroll" ||
+				( overflowX === "auto" && within.width < within.element[0].scrollWidth ),
+			hasOverflowY = overflowY === "scroll" ||
+				( overflowY === "auto" && within.height < within.element[0].scrollHeight );
+		return {
+			width: hasOverflowY ? $.position.scrollbarWidth() : 0,
+			height: hasOverflowX ? $.position.scrollbarWidth() : 0
+		};
+	},
+	getWithinInfo: function( element ) {
+		var withinElement = $( element || window ),
+			isWindow = $.isWindow( withinElement[0] );
+		return {
+			element: withinElement,
+			isWindow: isWindow,
+			offset: withinElement.offset() || { left: 0, top: 0 },
+			scrollLeft: withinElement.scrollLeft(),
+			scrollTop: withinElement.scrollTop(),
+			width: isWindow ? withinElement.width() : withinElement.outerWidth(),
+			height: isWindow ? withinElement.height() : withinElement.outerHeight()
+		};
+	}
+};
+
+$.fn.position = function( options ) {
+	if ( !options || !options.of ) {
+		return _position.apply( this, arguments );
+	}
+
+	// make a copy, we don't want to modify arguments
+	options = $.extend( {}, options );
+
+	var atOffset, targetWidth, targetHeight, targetOffset, basePosition, dimensions,
+		target = $( options.of ),
+		within = $.position.getWithinInfo( options.within ),
+		scrollInfo = $.position.getScrollInfo( within ),
+		collision = ( options.collision || "flip" ).split( " " ),
+		offsets = {};
+
+	dimensions = getDimensions( target );
+	if ( target[0].preventDefault ) {
+		// force left top to allow flipping
+		options.at = "left top";
+	}
+	targetWidth = dimensions.width;
+	targetHeight = dimensions.height;
+	targetOffset = dimensions.offset;
+	// clone to reuse original targetOffset later
+	basePosition = $.extend( {}, targetOffset );
+
+	// force my and at to have valid horizontal and vertical positions
+	// if a value is missing or invalid, it will be converted to center
+	$.each( [ "my", "at" ], function() {
+		var pos = ( options[ this ] || "" ).split( " " ),
+			horizontalOffset,
+			verticalOffset;
+
+		if ( pos.length === 1) {
+			pos = rhorizontal.test( pos[ 0 ] ) ?
+				pos.concat( [ "center" ] ) :
+				rvertical.test( pos[ 0 ] ) ?
+					[ "center" ].concat( pos ) :
+					[ "center", "center" ];
+		}
+		pos[ 0 ] = rhorizontal.test( pos[ 0 ] ) ? pos[ 0 ] : "center";
+		pos[ 1 ] = rvertical.test( pos[ 1 ] ) ? pos[ 1 ] : "center";
+
+		// calculate offsets
+		horizontalOffset = roffset.exec( pos[ 0 ] );
+		verticalOffset = roffset.exec( pos[ 1 ] );
+		offsets[ this ] = [
+			horizontalOffset ? horizontalOffset[ 0 ] : 0,
+			verticalOffset ? verticalOffset[ 0 ] : 0
+		];
+
+		// reduce to just the positions without the offsets
+		options[ this ] = [
+			rposition.exec( pos[ 0 ] )[ 0 ],
+			rposition.exec( pos[ 1 ] )[ 0 ]
+		];
+	});
+
+	// normalize collision option
+	if ( collision.length === 1 ) {
+		collision[ 1 ] = collision[ 0 ];
+	}
+
+	if ( options.at[ 0 ] === "right" ) {
+		basePosition.left += targetWidth;
+	} else if ( options.at[ 0 ] === "center" ) {
+		basePosition.left += targetWidth / 2;
+	}
+
+	if ( options.at[ 1 ] === "bottom" ) {
+		basePosition.top += targetHeight;
+	} else if ( options.at[ 1 ] === "center" ) {
+		basePosition.top += targetHeight / 2;
+	}
+
+	atOffset = getOffsets( offsets.at, targetWidth, targetHeight );
+	basePosition.left += atOffset[ 0 ];
+	basePosition.top += atOffset[ 1 ];
+
+	return this.each(function() {
+		var collisionPosition, using,
+			elem = $( this ),
+			elemWidth = elem.outerWidth(),
+			elemHeight = elem.outerHeight(),
+			marginLeft = parseCss( this, "marginLeft" ),
+			marginTop = parseCss( this, "marginTop" ),
+			collisionWidth = elemWidth + marginLeft + parseCss( this, "marginRight" ) + scrollInfo.width,
+			collisionHeight = elemHeight + marginTop + parseCss( this, "marginBottom" ) + scrollInfo.height,
+			position = $.extend( {}, basePosition ),
+			myOffset = getOffsets( offsets.my, elem.outerWidth(), elem.outerHeight() );
+
+		if ( options.my[ 0 ] === "right" ) {
+			position.left -= elemWidth;
+		} else if ( options.my[ 0 ] === "center" ) {
+			position.left -= elemWidth / 2;
+		}
+
+		if ( options.my[ 1 ] === "bottom" ) {
+			position.top -= elemHeight;
+		} else if ( options.my[ 1 ] === "center" ) {
+			position.top -= elemHeight / 2;
+		}
+
+		position.left += myOffset[ 0 ];
+		position.top += myOffset[ 1 ];
+
+		// if the browser doesn't support fractions, then round for consistent results
+		if ( !$.support.offsetFractions ) {
+			position.left = round( position.left );
+			position.top = round( position.top );
+		}
+
+		collisionPosition = {
+			marginLeft: marginLeft,
+			marginTop: marginTop
+		};
+
+		$.each( [ "left", "top" ], function( i, dir ) {
+			if ( $.ui.position[ collision[ i ] ] ) {
+				$.ui.position[ collision[ i ] ][ dir ]( position, {
+					targetWidth: targetWidth,
+					targetHeight: targetHeight,
+					elemWidth: elemWidth,
+					elemHeight: elemHeight,
+					collisionPosition: collisionPosition,
+					collisionWidth: collisionWidth,
+					collisionHeight: collisionHeight,
+					offset: [ atOffset[ 0 ] + myOffset[ 0 ], atOffset [ 1 ] + myOffset[ 1 ] ],
+					my: options.my,
+					at: options.at,
+					within: within,
+					elem : elem
+				});
+			}
+		});
+
+		if ( options.using ) {
+			// adds feedback as second argument to using callback, if present
+			using = function( props ) {
+				var left = targetOffset.left - position.left,
+					right = left + targetWidth - elemWidth,
+					top = targetOffset.top - position.top,
+					bottom = top + targetHeight - elemHeight,
+					feedback = {
+						target: {
+							element: target,
+							left: targetOffset.left,
+							top: targetOffset.top,
+							width: targetWidth,
+							height: targetHeight
+						},
+						element: {
+							element: elem,
+							left: position.left,
+							top: position.top,
+							width: elemWidth,
+							height: elemHeight
+						},
+						horizontal: right < 0 ? "left" : left > 0 ? "right" : "center",
+						vertical: bottom < 0 ? "top" : top > 0 ? "bottom" : "middle"
+					};
+				if ( targetWidth < elemWidth && abs( left + right ) < targetWidth ) {
+					feedback.horizontal = "center";
+				}
+				if ( targetHeight < elemHeight && abs( top + bottom ) < targetHeight ) {
+					feedback.vertical = "middle";
+				}
+				if ( max( abs( left ), abs( right ) ) > max( abs( top ), abs( bottom ) ) ) {
+					feedback.important = "horizontal";
+				} else {
+					feedback.important = "vertical";
+				}
+				options.using.call( this, props, feedback );
+			};
+		}
+
+		elem.offset( $.extend( position, { using: using } ) );
+	});
+};
+
+$.ui.position = {
+	fit: {
+		left: function( position, data ) {
+			var within = data.within,
+				withinOffset = within.isWindow ? within.scrollLeft : within.offset.left,
+				outerWidth = within.width,
+				collisionPosLeft = position.left - data.collisionPosition.marginLeft,
+				overLeft = withinOffset - collisionPosLeft,
+				overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset,
+				newOverRight;
+
+			// element is wider than within
+			if ( data.collisionWidth > outerWidth ) {
+				// element is initially over the left side of within
+				if ( overLeft > 0 && overRight <= 0 ) {
+					newOverRight = position.left + overLeft + data.collisionWidth - outerWidth - withinOffset;
+					position.left += overLeft - newOverRight;
+				// element is initially over right side of within
+				} else if ( overRight > 0 && overLeft <= 0 ) {
+					position.left = withinOffset;
+				// element is initially over both left and right sides of within
+				} else {
+					if ( overLeft > overRight ) {
+						position.left = withinOffset + outerWidth - data.collisionWidth;
+					} else {
+						position.left = withinOffset;
+					}
+				}
+			// too far left -> align with left edge
+			} else if ( overLeft > 0 ) {
+				position.left += overLeft;
+			// too far right -> align with right edge
+			} else if ( overRight > 0 ) {
+				position.left -= overRight;
+			// adjust based on position and margin
+			} else {
+				position.left = max( position.left - collisionPosLeft, position.left );
+			}
+		},
+		top: function( position, data ) {
+			var within = data.within,
+				withinOffset = within.isWindow ? within.scrollTop : within.offset.top,
+				outerHeight = data.within.height,
+				collisionPosTop = position.top - data.collisionPosition.marginTop,
+				overTop = withinOffset - collisionPosTop,
+				overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset,
+				newOverBottom;
+
+			// element is taller than within
+			if ( data.collisionHeight > outerHeight ) {
+				// element is initially over the top of within
+				if ( overTop > 0 && overBottom <= 0 ) {
+					newOverBottom = position.top + overTop + data.collisionHeight - outerHeight - withinOffset;
+					position.top += overTop - newOverBottom;
+				// element is initially over bottom of within
+				} else if ( overBottom > 0 && overTop <= 0 ) {
+					position.top = withinOffset;
+				// element is initially over both top and bottom of within
+				} else {
+					if ( overTop > overBottom ) {
+						position.top = withinOffset + outerHeight - data.collisionHeight;
+					} else {
+						position.top = withinOffset;
+					}
+				}
+			// too far up -> align with top
+			} else if ( overTop > 0 ) {
+				position.top += overTop;
+			// too far down -> align with bottom edge
+			} else if ( overBottom > 0 ) {
+				position.top -= overBottom;
+			// adjust based on position and margin
+			} else {
+				position.top = max( position.top - collisionPosTop, position.top );
+			}
+		}
+	},
+	flip: {
+		left: function( position, data ) {
+			var within = data.within,
+				withinOffset = within.offset.left + within.scrollLeft,
+				outerWidth = within.width,
+				offsetLeft = within.isWindow ? within.scrollLeft : within.offset.left,
+				collisionPosLeft = position.left - data.collisionPosition.marginLeft,
+				overLeft = collisionPosLeft - offsetLeft,
+				overRight = collisionPosLeft + data.collisionWidth - outerWidth - offsetLeft,
+				myOffset = data.my[ 0 ] === "left" ?
+					-data.elemWidth :
+					data.my[ 0 ] === "right" ?
+						data.elemWidth :
+						0,
+				atOffset = data.at[ 0 ] === "left" ?
+					data.targetWidth :
+					data.at[ 0 ] === "right" ?
+						-data.targetWidth :
+						0,
+				offset = -2 * data.offset[ 0 ],
+				newOverRight,
+				newOverLeft;
+
+			if ( overLeft < 0 ) {
+				newOverRight = position.left + myOffset + atOffset + offset + data.collisionWidth - outerWidth - withinOffset;
+				if ( newOverRight < 0 || newOverRight < abs( overLeft ) ) {
+					position.left += myOffset + atOffset + offset;
+				}
+			}
+			else if ( overRight > 0 ) {
+				newOverLeft = position.left - data.collisionPosition.marginLeft + myOffset + atOffset + offset - offsetLeft;
+				if ( newOverLeft > 0 || abs( newOverLeft ) < overRight ) {
+					position.left += myOffset + atOffset + offset;
+				}
+			}
+		},
+		top: function( position, data ) {
+			var within = data.within,
+				withinOffset = within.offset.top + within.scrollTop,
+				outerHeight = within.height,
+				offsetTop = within.isWindow ? within.scrollTop : within.offset.top,
+				collisionPosTop = position.top - data.collisionPosition.marginTop,
+				overTop = collisionPosTop - offsetTop,
+				overBottom = collisionPosTop + data.collisionHeight - outerHeight - offsetTop,
+				top = data.my[ 1 ] === "top",
+				myOffset = top ?
+					-data.elemHeight :
+					data.my[ 1 ] === "bottom" ?
+						data.elemHeight :
+						0,
+				atOffset = data.at[ 1 ] === "top" ?
+					data.targetHeight :
+					data.at[ 1 ] === "bottom" ?
+						-data.targetHeight :
+						0,
+				offset = -2 * data.offset[ 1 ],
+				newOverTop,
+				newOverBottom;
+			if ( overTop < 0 ) {
+				newOverBottom = position.top + myOffset + atOffset + offset + data.collisionHeight - outerHeight - withinOffset;
+				if ( ( position.top + myOffset + atOffset + offset) > overTop && ( newOverBottom < 0 || newOverBottom < abs( overTop ) ) ) {
+					position.top += myOffset + atOffset + offset;
+				}
+			}
+			else if ( overBottom > 0 ) {
+				newOverTop = position.top -  data.collisionPosition.marginTop + myOffset + atOffset + offset - offsetTop;
+				if ( ( position.top + myOffset + atOffset + offset) > overBottom && ( newOverTop > 0 || abs( newOverTop ) < overBottom ) ) {
+					position.top += myOffset + atOffset + offset;
+				}
+			}
+		}
+	},
+	flipfit: {
+		left: function() {
+			$.ui.position.flip.left.apply( this, arguments );
+			$.ui.position.fit.left.apply( this, arguments );
+		},
+		top: function() {
+			$.ui.position.flip.top.apply( this, arguments );
+			$.ui.position.fit.top.apply( this, arguments );
+		}
+	}
+};
+
+// fraction support test
+(function () {
+	var testElement, testElementParent, testElementStyle, offsetLeft, i,
+		body = document.getElementsByTagName( "body" )[ 0 ],
+		div = document.createElement( "div" );
+
+	//Create a "fake body" for testing based on method used in jQuery.support
+	testElement = document.createElement( body ? "div" : "body" );
+	testElementStyle = {
+		visibility: "hidden",
+		width: 0,
+		height: 0,
+		border: 0,
+		margin: 0,
+		background: "none"
+	};
+	if ( body ) {
+		$.extend( testElementStyle, {
+			position: "absolute",
+			left: "-1000px",
+			top: "-1000px"
+		});
+	}
+	for ( i in testElementStyle ) {
+		testElement.style[ i ] = testElementStyle[ i ];
+	}
+	testElement.appendChild( div );
+	testElementParent = body || document.documentElement;
+	testElementParent.insertBefore( testElement, testElementParent.firstChild );
+
+	div.style.cssText = "position: absolute; left: 10.7432222px;";
+
+	offsetLeft = $( div ).offset().left;
+	$.support.offsetFractions = offsetLeft > 10 && offsetLeft < 11;
+
+	testElement.innerHTML = "";
+	testElementParent.removeChild( testElement );
+})();
+
+}( jQuery ) );
+/*!
+ * jQuery UI Menu 1.10.2
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/menu/
+ *
+ * Depends:
+ *	jquery.ui.core.js
+ *	jquery.ui.widget.js
+ *	jquery.ui.position.js
+ */
+(function( $, undefined ) {
+
+$.widget( "ui.menu", {
+	version: "1.10.2",
+	defaultElement: "<ul>",
+	delay: 300,
+	options: {
+		icons: {
+			submenu: "ui-icon-carat-1-e"
+		},
+		menus: "ul",
+		position: {
+			my: "left top",
+			at: "right top"
+		},
+		role: "menu",
+
+		// callbacks
+		blur: null,
+		focus: null,
+		select: null
+	},
+
+	_create: function() {
+		this.activeMenu = this.element;
+		// flag used to prevent firing of the click handler
+		// as the event bubbles up through nested menus
+		this.mouseHandled = false;
+		this.element
+			.uniqueId()
+			.addClass( "ui-menu ui-widget ui-widget-content ui-corner-all" )
+			.toggleClass( "ui-menu-icons", !!this.element.find( ".ui-icon" ).length )
+			.attr({
+				role: this.options.role,
+				tabIndex: 0
+			})
+			// need to catch all clicks on disabled menu
+			// not possible through _on
+			.bind( "click" + this.eventNamespace, $.proxy(function( event ) {
+				if ( this.options.disabled ) {
+					event.preventDefault();
+				}
+			}, this ));
+
+		if ( this.options.disabled ) {
+			this.element
+				.addClass( "ui-state-disabled" )
+				.attr( "aria-disabled", "true" );
+		}
+
+		this._on({
+			// Prevent focus from sticking to links inside menu after clicking
+			// them (focus should always stay on UL during navigation).
+			"mousedown .ui-menu-item > a": function( event ) {
+				event.preventDefault();
+			},
+			"click .ui-state-disabled > a": function( event ) {
+				event.preventDefault();
+			},
+			"click .ui-menu-item:has(a)": function( event ) {
+				var target = $( event.target ).closest( ".ui-menu-item" );
+				if ( !this.mouseHandled && target.not( ".ui-state-disabled" ).length ) {
+					this.mouseHandled = true;
+
+					this.select( event );
+					// Open submenu on click
+					if ( target.has( ".ui-menu" ).length ) {
+						this.expand( event );
+					} else if ( !this.element.is( ":focus" ) ) {
+						// Redirect focus to the menu
+						this.element.trigger( "focus", [ true ] );
+
+						// If the active item is on the top level, let it stay active.
+						// Otherwise, blur the active item since it is no longer visible.
+						if ( this.active && this.active.parents( ".ui-menu" ).length === 1 ) {
+							clearTimeout( this.timer );
+						}
+					}
+				}
+			},
+			"mouseenter .ui-menu-item": function( event ) {
+				var target = $( event.currentTarget );
+				// Remove ui-state-active class from siblings of the newly focused menu item
+				// to avoid a jump caused by adjacent elements both having a class with a border
+				target.siblings().children( ".ui-state-active" ).removeClass( "ui-state-active" );
+				this.focus( event, target );
+			},
+			mouseleave: "collapseAll",
+			"mouseleave .ui-menu": "collapseAll",
+			focus: function( event, keepActiveItem ) {
+				// If there's already an active item, keep it active
+				// If not, activate the first item
+				var item = this.active || this.element.children( ".ui-menu-item" ).eq( 0 );
+
+				if ( !keepActiveItem ) {
+					this.focus( event, item );
+				}
+			},
+			blur: function( event ) {
+				this._delay(function() {
+					if ( !$.contains( this.element[0], this.document[0].activeElement ) ) {
+						this.collapseAll( event );
+					}
+				});
+			},
+			keydown: "_keydown"
+		});
+
+		this.refresh();
+
+		// Clicks outside of a menu collapse any open menus
+		this._on( this.document, {
+			click: function( event ) {
+				if ( !$( event.target ).closest( ".ui-menu" ).length ) {
+					this.collapseAll( event );
+				}
+
+				// Reset the mouseHandled flag
+				this.mouseHandled = false;
+			}
+		});
+	},
+
+	_destroy: function() {
+		// Destroy (sub)menus
+		this.element
+			.removeAttr( "aria-activedescendant" )
+			.find( ".ui-menu" ).addBack()
+				.removeClass( "ui-menu ui-widget ui-widget-content ui-corner-all ui-menu-icons" )
+				.removeAttr( "role" )
+				.removeAttr( "tabIndex" )
+				.removeAttr( "aria-labelledby" )
+				.removeAttr( "aria-expanded" )
+				.removeAttr( "aria-hidden" )
+				.removeAttr( "aria-disabled" )
+				.removeUniqueId()
+				.show();
+
+		// Destroy menu items
+		this.element.find( ".ui-menu-item" )
+			.removeClass( "ui-menu-item" )
+			.removeAttr( "role" )
+			.removeAttr( "aria-disabled" )
+			.children( "a" )
+				.removeUniqueId()
+				.removeClass( "ui-corner-all ui-state-hover" )
+				.removeAttr( "tabIndex" )
+				.removeAttr( "role" )
+				.removeAttr( "aria-haspopup" )
+				.children().each( function() {
+					var elem = $( this );
+					if ( elem.data( "ui-menu-submenu-carat" ) ) {
+						elem.remove();
+					}
+				});
+
+		// Destroy menu dividers
+		this.element.find( ".ui-menu-divider" ).removeClass( "ui-menu-divider ui-widget-content" );
+	},
+
+	_keydown: function( event ) {
+		/*jshint maxcomplexity:20*/
+		var match, prev, character, skip, regex,
+			preventDefault = true;
+
+		function escape( value ) {
+			return value.replace( /[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&" );
+		}
+
+		switch ( event.keyCode ) {
+		case $.ui.keyCode.PAGE_UP:
+			this.previousPage( event );
+			break;
+		case $.ui.keyCode.PAGE_DOWN:
+			this.nextPage( event );
+			break;
+		case $.ui.keyCode.HOME:
+			this._move( "first", "first", event );
+			break;
+		case $.ui.keyCode.END:
+			this._move( "last", "last", event );
+			break;
+		case $.ui.keyCode.UP:
+			this.previous( event );
+			break;
+		case $.ui.keyCode.DOWN:
+			this.next( event );
+			break;
+		case $.ui.keyCode.LEFT:
+			this.collapse( event );
+			break;
+		case $.ui.keyCode.RIGHT:
+			if ( this.active && !this.active.is( ".ui-state-disabled" ) ) {
+				this.expand( event );
+			}
+			break;
+		case $.ui.keyCode.ENTER:
+		case $.ui.keyCode.SPACE:
+			this._activate( event );
+			break;
+		case $.ui.keyCode.ESCAPE:
+			this.collapse( event );
+			break;
+		default:
+			preventDefault = false;
+			prev = this.previousFilter || "";
+			character = String.fromCharCode( event.keyCode );
+			skip = false;
+
+			clearTimeout( this.filterTimer );
+
+			if ( character === prev ) {
+				skip = true;
+			} else {
+				character = prev + character;
+			}
+
+			regex = new RegExp( "^" + escape( character ), "i" );
+			match = this.activeMenu.children( ".ui-menu-item" ).filter(function() {
+				return regex.test( $( this ).children( "a" ).text() );
+			});
+			match = skip && match.index( this.active.next() ) !== -1 ?
+				this.active.nextAll( ".ui-menu-item" ) :
+				match;
+
+			// If no matches on the current filter, reset to the last character pressed
+			// to move down the menu to the first item that starts with that character
+			if ( !match.length ) {
+				character = String.fromCharCode( event.keyCode );
+				regex = new RegExp( "^" + escape( character ), "i" );
+				match = this.activeMenu.children( ".ui-menu-item" ).filter(function() {
+					return regex.test( $( this ).children( "a" ).text() );
+				});
+			}
+
+			if ( match.length ) {
+				this.focus( event, match );
+				if ( match.length > 1 ) {
+					this.previousFilter = character;
+					this.filterTimer = this._delay(function() {
+						delete this.previousFilter;
+					}, 1000 );
+				} else {
+					delete this.previousFilter;
+				}
+			} else {
+				delete this.previousFilter;
+			}
+		}
+
+		if ( preventDefault ) {
+			event.preventDefault();
+		}
+	},
+
+	_activate: function( event ) {
+		if ( !this.active.is( ".ui-state-disabled" ) ) {
+			if ( this.active.children( "a[aria-haspopup='true']" ).length ) {
+				this.expand( event );
+			} else {
+				this.select( event );
+			}
+		}
+	},
+
+	refresh: function() {
+		var menus,
+			icon = this.options.icons.submenu,
+			submenus = this.element.find( this.options.menus );
+
+		// Initialize nested menus
+		submenus.filter( ":not(.ui-menu)" )
+			.addClass( "ui-menu ui-widget ui-widget-content ui-corner-all" )
+			.hide()
+			.attr({
+				role: this.options.role,
+				"aria-hidden": "true",
+				"aria-expanded": "false"
+			})
+			.each(function() {
+				var menu = $( this ),
+					item = menu.prev( "a" ),
+					submenuCarat = $( "<span>" )
+						.addClass( "ui-menu-icon ui-icon " + icon )
+						.data( "ui-menu-submenu-carat", true );
+
+				item
+					.attr( "aria-haspopup", "true" )
+					.prepend( submenuCarat );
+				menu.attr( "aria-labelledby", item.attr( "id" ) );
+			});
+
+		menus = submenus.add( this.element );
+
+		// Don't refresh list items that are already adapted
+		menus.children( ":not(.ui-menu-item):has(a)" )
+			.addClass( "ui-menu-item" )
+			.attr( "role", "presentation" )
+			.children( "a" )
+				.uniqueId()
+				.addClass( "ui-corner-all" )
+				.attr({
+					tabIndex: -1,
+					role: this._itemRole()
+				});
+
+		// Initialize unlinked menu-items containing spaces and/or dashes only as dividers
+		menus.children( ":not(.ui-menu-item)" ).each(function() {
+			var item = $( this );
+			// hyphen, em dash, en dash
+			if ( !/[^\-\u2014\u2013\s]/.test( item.text() ) ) {
+				item.addClass( "ui-widget-content ui-menu-divider" );
+			}
+		});
+
+		// Add aria-disabled attribute to any disabled menu item
+		menus.children( ".ui-state-disabled" ).attr( "aria-disabled", "true" );
+
+		// If the active item has been removed, blur the menu
+		if ( this.active && !$.contains( this.element[ 0 ], this.active[ 0 ] ) ) {
+			this.blur();
+		}
+	},
+
+	_itemRole: function() {
+		return {
+			menu: "menuitem",
+			listbox: "option"
+		}[ this.options.role ];
+	},
+
+	_setOption: function( key, value ) {
+		if ( key === "icons" ) {
+			this.element.find( ".ui-menu-icon" )
+				.removeClass( this.options.icons.submenu )
+				.addClass( value.submenu );
+		}
+		this._super( key, value );
+	},
+
+	focus: function( event, item ) {
+		var nested, focused;
+		this.blur( event, event && event.type === "focus" );
+
+		this._scrollIntoView( item );
+
+		this.active = item.first();
+		focused = this.active.children( "a" ).addClass( "ui-state-focus" );
+		// Only update aria-activedescendant if there's a role
+		// otherwise we assume focus is managed elsewhere
+		if ( this.options.role ) {
+			this.element.attr( "aria-activedescendant", focused.attr( "id" ) );
+		}
+
+		// Highlight active parent menu item, if any
+		this.active
+			.parent()
+			.closest( ".ui-menu-item" )
+			.children( "a:first" )
+			.addClass( "ui-state-active" );
+
+		if ( event && event.type === "keydown" ) {
+			this._close();
+		} else {
+			this.timer = this._delay(function() {
+				this._close();
+			}, this.delay );
+		}
+
+		nested = item.children( ".ui-menu" );
+		if ( nested.length && ( /^mouse/.test( event.type ) ) ) {
+			this._startOpening(nested);
+		}
+		this.activeMenu = item.parent();
+
+		this._trigger( "focus", event, { item: item } );
+	},
+
+	_scrollIntoView: function( item ) {
+		var borderTop, paddingTop, offset, scroll, elementHeight, itemHeight;
+		if ( this._hasScroll() ) {
+			borderTop = parseFloat( $.css( this.activeMenu[0], "borderTopWidth" ) ) || 0;
+			paddingTop = parseFloat( $.css( this.activeMenu[0], "paddingTop" ) ) || 0;
+			offset = item.offset().top - this.activeMenu.offset().top - borderTop - paddingTop;
+			scroll = this.activeMenu.scrollTop();
+			elementHeight = this.activeMenu.height();
+			itemHeight = item.height();
+
+			if ( offset < 0 ) {
+				this.activeMenu.scrollTop( scroll + offset );
+			} else if ( offset + itemHeight > elementHeight ) {
+				this.activeMenu.scrollTop( scroll + offset - elementHeight + itemHeight );
+			}
+		}
+	},
+
+	blur: function( event, fromFocus ) {
+		if ( !fromFocus ) {
+			clearTimeout( this.timer );
+		}
+
+		if ( !this.active ) {
+			return;
+		}
+
+		this.active.children( "a" ).removeClass( "ui-state-focus" );
+		this.active = null;
+
+		this._trigger( "blur", event, { item: this.active } );
+	},
+
+	_startOpening: function( submenu ) {
+		clearTimeout( this.timer );
+
+		// Don't open if already open fixes a Firefox bug that caused a .5 pixel
+		// shift in the submenu position when mousing over the carat icon
+		if ( submenu.attr( "aria-hidden" ) !== "true" ) {
+			return;
+		}
+
+		this.timer = this._delay(function() {
+			this._close();
+			this._open( submenu );
+		}, this.delay );
+	},
+
+	_open: function( submenu ) {
+		var position = $.extend({
+			of: this.active
+		}, this.options.position );
+
+		clearTimeout( this.timer );
+		this.element.find( ".ui-menu" ).not( submenu.parents( ".ui-menu" ) )
+			.hide()
+			.attr( "aria-hidden", "true" );
+
+		submenu
+			.show()
+			.removeAttr( "aria-hidden" )
+			.attr( "aria-expanded", "true" )
+			.position( position );
+	},
+
+	collapseAll: function( event, all ) {
+		clearTimeout( this.timer );
+		this.timer = this._delay(function() {
+			// If we were passed an event, look for the submenu that contains the event
+			var currentMenu = all ? this.element :
+				$( event && event.target ).closest( this.element.find( ".ui-menu" ) );
+
+			// If we found no valid submenu ancestor, use the main menu to close all sub menus anyway
+			if ( !currentMenu.length ) {
+				currentMenu = this.element;
+			}
+
+			this._close( currentMenu );
+
+			this.blur( event );
+			this.activeMenu = currentMenu;
+		}, this.delay );
+	},
+
+	// With no arguments, closes the currently active menu - if nothing is active
+	// it closes all menus.  If passed an argument, it will search for menus BELOW
+	_close: function( startMenu ) {
+		if ( !startMenu ) {
+			startMenu = this.active ? this.active.parent() : this.element;
+		}
+
+		startMenu
+			.find( ".ui-menu" )
+				.hide()
+				.attr( "aria-hidden", "true" )
+				.attr( "aria-expanded", "false" )
+			.end()
+			.find( "a.ui-state-active" )
+				.removeClass( "ui-state-active" );
+	},
+
+	collapse: function( event ) {
+		var newItem = this.active &&
+			this.active.parent().closest( ".ui-menu-item", this.element );
+		if ( newItem && newItem.length ) {
+			this._close();
+			this.focus( event, newItem );
+		}
+	},
+
+	expand: function( event ) {
+		var newItem = this.active &&
+			this.active
+				.children( ".ui-menu " )
+				.children( ".ui-menu-item" )
+				.first();
+
+		if ( newItem && newItem.length ) {
+			this._open( newItem.parent() );
+
+			// Delay so Firefox will not hide activedescendant change in expanding submenu from AT
+			this._delay(function() {
+				this.focus( event, newItem );
+			});
+		}
+	},
+
+	next: function( event ) {
+		this._move( "next", "first", event );
+	},
+
+	previous: function( event ) {
+		this._move( "prev", "last", event );
+	},
+
+	isFirstItem: function() {
+		return this.active && !this.active.prevAll( ".ui-menu-item" ).length;
+	},
+
+	isLastItem: function() {
+		return this.active && !this.active.nextAll( ".ui-menu-item" ).length;
+	},
+
+	_move: function( direction, filter, event ) {
+		var next;
+		if ( this.active ) {
+			if ( direction === "first" || direction === "last" ) {
+				next = this.active
+					[ direction === "first" ? "prevAll" : "nextAll" ]( ".ui-menu-item" )
+					.eq( -1 );
+			} else {
+				next = this.active
+					[ direction + "All" ]( ".ui-menu-item" )
+					.eq( 0 );
+			}
+		}
+		if ( !next || !next.length || !this.active ) {
+			next = this.activeMenu.children( ".ui-menu-item" )[ filter ]();
+		}
+
+		this.focus( event, next );
+	},
+
+	nextPage: function( event ) {
+		var item, base, height;
+
+		if ( !this.active ) {
+			this.next( event );
+			return;
+		}
+		if ( this.isLastItem() ) {
+			return;
+		}
+		if ( this._hasScroll() ) {
+			base = this.active.offset().top;
+			height = this.element.height();
+			this.active.nextAll( ".ui-menu-item" ).each(function() {
+				item = $( this );
+				return item.offset().top - base - height < 0;
+			});
+
+			this.focus( event, item );
+		} else {
+			this.focus( event, this.activeMenu.children( ".ui-menu-item" )
+				[ !this.active ? "first" : "last" ]() );
+		}
+	},
+
+	previousPage: function( event ) {
+		var item, base, height;
+		if ( !this.active ) {
+			this.next( event );
+			return;
+		}
+		if ( this.isFirstItem() ) {
+			return;
+		}
+		if ( this._hasScroll() ) {
+			base = this.active.offset().top;
+			height = this.element.height();
+			this.active.prevAll( ".ui-menu-item" ).each(function() {
+				item = $( this );
+				return item.offset().top - base + height > 0;
+			});
+
+			this.focus( event, item );
+		} else {
+			this.focus( event, this.activeMenu.children( ".ui-menu-item" ).first() );
+		}
+	},
+
+	_hasScroll: function() {
+		return this.element.outerHeight() < this.element.prop( "scrollHeight" );
+	},
+
+	select: function( event ) {
+		// TODO: It should never be possible to not have an active item at this
+		// point, but the tests don't trigger mouseenter before click.
+		this.active = this.active || $( event.target ).closest( ".ui-menu-item" );
+		var ui = { item: this.active };
+		if ( !this.active.has( ".ui-menu" ).length ) {
+			this.collapseAll( event, true );
+		}
+		this._trigger( "select", event, ui );
+	}
+});
+
+}( jQuery ));
+/*!
+ * jQuery UI Autocomplete 1.10.2
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/autocomplete/
+ *
+ * Depends:
+ *	jquery.ui.core.js
+ *	jquery.ui.widget.js
+ *	jquery.ui.position.js
+ *	jquery.ui.menu.js
+ */
+(function( $, undefined ) {
+
+// used to prevent race conditions with remote data sources
+var requestIndex = 0;
+
+$.widget( "ui.autocomplete", {
+	version: "1.10.2",
+	defaultElement: "<input>",
+	options: {
+		appendTo: null,
+		autoFocus: false,
+		delay: 300,
+		minLength: 1,
+		position: {
+			my: "left top",
+			at: "left bottom",
+			collision: "none"
+		},
+		source: null,
+
+		// callbacks
+		change: null,
+		close: null,
+		focus: null,
+		open: null,
+		response: null,
+		search: null,
+		select: null
+	},
+
+	pending: 0,
+
+	_create: function() {
+		// Some browsers only repeat keydown events, not keypress events,
+		// so we use the suppressKeyPress flag to determine if we've already
+		// handled the keydown event. #7269
+		// Unfortunately the code for & in keypress is the same as the up arrow,
+		// so we use the suppressKeyPressRepeat flag to avoid handling keypress
+		// events when we know the keydown event was used to modify the
+		// search term. #7799
+		var suppressKeyPress, suppressKeyPressRepeat, suppressInput,
+			nodeName = this.element[0].nodeName.toLowerCase(),
+			isTextarea = nodeName === "textarea",
+			isInput = nodeName === "input";
+
+		this.isMultiLine =
+			// Textareas are always multi-line
+			isTextarea ? true :
+			// Inputs are always single-line, even if inside a contentEditable element
+			// IE also treats inputs as contentEditable
+			isInput ? false :
+			// All other element types are determined by whether or not they're contentEditable
+			this.element.prop( "isContentEditable" );
+
+		this.valueMethod = this.element[ isTextarea || isInput ? "val" : "text" ];
+		this.isNewMenu = true;
+
+		this.element
+			.addClass( "ui-autocomplete-input" )
+			.attr( "autocomplete", "off" );
+
+		this._on( this.element, {
+			keydown: function( event ) {
+				/*jshint maxcomplexity:15*/
+				if ( this.element.prop( "readOnly" ) ) {
+					suppressKeyPress = true;
+					suppressInput = true;
+					suppressKeyPressRepeat = true;
+					return;
+				}
+
+				suppressKeyPress = false;
+				suppressInput = false;
+				suppressKeyPressRepeat = false;
+				var keyCode = $.ui.keyCode;
+				switch( event.keyCode ) {
+				case keyCode.PAGE_UP:
+					suppressKeyPress = true;
+					this._move( "previousPage", event );
+					break;
+				case keyCode.PAGE_DOWN:
+					suppressKeyPress = true;
+					this._move( "nextPage", event );
+					break;
+				case keyCode.UP:
+					suppressKeyPress = true;
+					this._keyEvent( "previous", event );
+					break;
+				case keyCode.DOWN:
+					suppressKeyPress = true;
+					this._keyEvent( "next", event );
+					break;
+				case keyCode.ENTER:
+				case keyCode.NUMPAD_ENTER:
+					// when menu is open and has focus
+					if ( this.menu.active ) {
+						// #6055 - Opera still allows the keypress to occur
+						// which causes forms to submit
+						suppressKeyPress = true;
+						event.preventDefault();
+						this.menu.select( event );
+					}
+					break;
+				case keyCode.TAB:
+					if ( this.menu.active ) {
+						this.menu.select( event );
+					}
+					break;
+				case keyCode.ESCAPE:
+					if ( this.menu.element.is( ":visible" ) ) {
+						this._value( this.term );
+						this.close( event );
+						// Different browsers have different default behavior for escape
+						// Single press can mean undo or clear
+						// Double press in IE means clear the whole form
+						event.preventDefault();
+					}
+					break;
+				default:
+					suppressKeyPressRepeat = true;
+					// search timeout should be triggered before the input value is changed
+					this._searchTimeout( event );
+					break;
+				}
+			},
+			keypress: function( event ) {
+				if ( suppressKeyPress ) {
+					suppressKeyPress = false;
+					event.preventDefault();
+					return;
+				}
+				if ( suppressKeyPressRepeat ) {
+					return;
+				}
+
+				// replicate some key handlers to allow them to repeat in Firefox and Opera
+				var keyCode = $.ui.keyCode;
+				switch( event.keyCode ) {
+				case keyCode.PAGE_UP:
+					this._move( "previousPage", event );
+					break;
+				case keyCode.PAGE_DOWN:
+					this._move( "nextPage", event );
+					break;
+				case keyCode.UP:
+					this._keyEvent( "previous", event );
+					break;
+				case keyCode.DOWN:
+					this._keyEvent( "next", event );
+					break;
+				}
+			},
+			input: function( event ) {
+				if ( suppressInput ) {
+					suppressInput = false;
+					event.preventDefault();
+					return;
+				}
+				this._searchTimeout( event );
+			},
+			focus: function() {
+				this.selectedItem = null;
+				this.previous = this._value();
+			},
+			blur: function( event ) {
+				if ( this.cancelBlur ) {
+					delete this.cancelBlur;
+					return;
+				}
+
+				clearTimeout( this.searching );
+				this.close( event );
+				this._change( event );
+			}
+		});
+
+		this._initSource();
+		this.menu = $( "<ul>" )
+			.addClass( "ui-autocomplete ui-front" )
+			.appendTo( this._appendTo() )
+			.menu({
+				// custom key handling for now
+				input: $(),
+				// disable ARIA support, the live region takes care of that
+				role: null
+			})
+			.hide()
+			.data( "ui-menu" );
+
+		this._on( this.menu.element, {
+			mousedown: function( event ) {
+				// prevent moving focus out of the text field
+				event.preventDefault();
+
+				// IE doesn't prevent moving focus even with event.preventDefault()
+				// so we set a flag to know when we should ignore the blur event
+				this.cancelBlur = true;
+				this._delay(function() {
+					delete this.cancelBlur;
+				});
+
+				// clicking on the scrollbar causes focus to shift to the body
+				// but we can't detect a mouseup or a click immediately afterward
+				// so we have to track the next mousedown and close the menu if
+				// the user clicks somewhere outside of the autocomplete
+				var menuElement = this.menu.element[ 0 ];
+				if ( !$( event.target ).closest( ".ui-menu-item" ).length ) {
+					this._delay(function() {
+						var that = this;
+						this.document.one( "mousedown", function( event ) {
+							if ( event.target !== that.element[ 0 ] &&
+									event.target !== menuElement &&
+									!$.contains( menuElement, event.target ) ) {
+								that.close();
+							}
+						});
+					});
+				}
+			},
+			menufocus: function( event, ui ) {
+				// support: Firefox
+				// Prevent accidental activation of menu items in Firefox (#7024 #9118)
+				if ( this.isNewMenu ) {
+					this.isNewMenu = false;
+					if ( event.originalEvent && /^mouse/.test( event.originalEvent.type ) ) {
+						this.menu.blur();
+
+						this.document.one( "mousemove", function() {
+							$( event.target ).trigger( event.originalEvent );
+						});
+
+						return;
+					}
+				}
+
+				var item = ui.item.data( "ui-autocomplete-item" );
+				if ( false !== this._trigger( "focus", event, { item: item } ) ) {
+					// use value to match what will end up in the input, if it was a key event
+					if ( event.originalEvent && /^key/.test( event.originalEvent.type ) ) {
+						this._value( item.value );
+					}
+				} else {
+					// Normally the input is populated with the item's value as the
+					// menu is navigated, causing screen readers to notice a change and
+					// announce the item. Since the focus event was canceled, this doesn't
+					// happen, so we update the live region so that screen readers can
+					// still notice the change and announce it.
+					this.liveRegion.text( item.value );
+				}
+			},
+			menuselect: function( event, ui ) {
+				var item = ui.item.data( "ui-autocomplete-item" ),
+					previous = this.previous;
+
+				// only trigger when focus was lost (click on menu)
+				if ( this.element[0] !== this.document[0].activeElement ) {
+					this.element.focus();
+					this.previous = previous;
+					// #6109 - IE triggers two focus events and the second
+					// is asynchronous, so we need to reset the previous
+					// term synchronously and asynchronously :-(
+					this._delay(function() {
+						this.previous = previous;
+						this.selectedItem = item;
+					});
+				}
+
+				if ( false !== this._trigger( "select", event, { item: item } ) ) {
+					this._value( item.value );
+				}
+				// reset the term after the select event
+				// this allows custom select handling to work properly
+				this.term = this._value();
+
+				this.close( event );
+				this.selectedItem = item;
+			}
+		});
+
+		this.liveRegion = $( "<span>", {
+				role: "status",
+				"aria-live": "polite"
+			})
+			.addClass( "ui-helper-hidden-accessible" )
+			.insertAfter( this.element );
+
+		// turning off autocomplete prevents the browser from remembering the
+		// value when navigating through history, so we re-enable autocomplete
+		// if the page is unloaded before the widget is destroyed. #7790
+		this._on( this.window, {
+			beforeunload: function() {
+				this.element.removeAttr( "autocomplete" );
+			}
+		});
+	},
+
+	_destroy: function() {
+		clearTimeout( this.searching );
+		this.element
+			.removeClass( "ui-autocomplete-input" )
+			.removeAttr( "autocomplete" );
+		this.menu.element.remove();
+		this.liveRegion.remove();
+	},
+
+	_setOption: function( key, value ) {
+		this._super( key, value );
+		if ( key === "source" ) {
+			this._initSource();
+		}
+		if ( key === "appendTo" ) {
+			this.menu.element.appendTo( this._appendTo() );
+		}
+		if ( key === "disabled" && value && this.xhr ) {
+			this.xhr.abort();
+		}
+	},
+
+	_appendTo: function() {
+		var element = this.options.appendTo;
+
+		if ( element ) {
+			element = element.jquery || element.nodeType ?
+				$( element ) :
+				this.document.find( element ).eq( 0 );
+		}
+
+		if ( !element ) {
+			element = this.element.closest( ".ui-front" );
+		}
+
+		if ( !element.length ) {
+			element = this.document[0].body;
+		}
+
+		return element;
+	},
+
+	_initSource: function() {
+		var array, url,
+			that = this;
+		if ( $.isArray(this.options.source) ) {
+			array = this.options.source;
+			this.source = function( request, response ) {
+				response( $.ui.autocomplete.filter( array, request.term ) );
+			};
+		} else if ( typeof this.options.source === "string" ) {
+			url = this.options.source;
+			this.source = function( request, response ) {
+				if ( that.xhr ) {
+					that.xhr.abort();
+				}
+				that.xhr = $.ajax({
+					url: url,
+					data: request,
+					dataType: "json",
+					success: function( data ) {
+						response( data );
+					},
+					error: function() {
+						response( [] );
+					}
+				});
+			};
+		} else {
+			this.source = this.options.source;
+		}
+	},
+
+	_searchTimeout: function( event ) {
+		clearTimeout( this.searching );
+		this.searching = this._delay(function() {
+			// only search if the value has changed
+			if ( this.term !== this._value() ) {
+				this.selectedItem = null;
+				this.search( null, event );
+			}
+		}, this.options.delay );
+	},
+
+	search: function( value, event ) {
+		value = value != null ? value : this._value();
+
+		// always save the actual value, not the one passed as an argument
+		this.term = this._value();
+
+		if ( value.length < this.options.minLength ) {
+			return this.close( event );
+		}
+
+		if ( this._trigger( "search", event ) === false ) {
+			return;
+		}
+
+		return this._search( value );
+	},
+
+	_search: function( value ) {
+		this.pending++;
+		this.element.addClass( "ui-autocomplete-loading" );
+		this.cancelSearch = false;
+
+		this.source( { term: value }, this._response() );
+	},
+
+	_response: function() {
+		var that = this,
+			index = ++requestIndex;
+
+		return function( content ) {
+			if ( index === requestIndex ) {
+				that.__response( content );
+			}
+
+			that.pending--;
+			if ( !that.pending ) {
+				that.element.removeClass( "ui-autocomplete-loading" );
+			}
+		};
+	},
+
+	__response: function( content ) {
+		if ( content ) {
+			content = this._normalize( content );
+		}
+		this._trigger( "response", null, { content: content } );
+		if ( !this.options.disabled && content && content.length && !this.cancelSearch ) {
+			this._suggest( content );
+			this._trigger( "open" );
+		} else {
+			// use ._close() instead of .close() so we don't cancel future searches
+			this._close();
+		}
+	},
+
+	close: function( event ) {
+		this.cancelSearch = true;
+		this._close( event );
+	},
+
+	_close: function( event ) {
+		if ( this.menu.element.is( ":visible" ) ) {
+			this.menu.element.hide();
+			this.menu.blur();
+			this.isNewMenu = true;
+			this._trigger( "close", event );
+		}
+	},
+
+	_change: function( event ) {
+		if ( this.previous !== this._value() ) {
+			this._trigger( "change", event, { item: this.selectedItem } );
+		}
+	},
+
+	_normalize: function( items ) {
+		// assume all items have the right format when the first item is complete
+		if ( items.length && items[0].label && items[0].value ) {
+			return items;
+		}
+		return $.map( items, function( item ) {
+			if ( typeof item === "string" ) {
+				return {
+					label: item,
+					value: item
+				};
+			}
+			return $.extend({
+				label: item.label || item.value,
+				value: item.value || item.label
+			}, item );
+		});
+	},
+
+	_suggest: function( items ) {
+		var ul = this.menu.element.empty();
+		this._renderMenu( ul, items );
+		this.isNewMenu = true;
+		this.menu.refresh();
+
+		// size and position menu
+		ul.show();
+		this._resizeMenu();
+		ul.position( $.extend({
+			of: this.element
+		}, this.options.position ));
+
+		if ( this.options.autoFocus ) {
+			this.menu.next();
+		}
+	},
+
+	_resizeMenu: function() {
+		var ul = this.menu.element;
+		ul.outerWidth( Math.max(
+			// Firefox wraps long text (possibly a rounding bug)
+			// so we add 1px to avoid the wrapping (#7513)
+			ul.width( "" ).outerWidth() + 1,
+			this.element.outerWidth()
+		) );
+	},
+
+	_renderMenu: function( ul, items ) {
+		var that = this;
+		$.each( items, function( index, item ) {
+			that._renderItemData( ul, item );
+		});
+	},
+
+	_renderItemData: function( ul, item ) {
+		return this._renderItem( ul, item ).data( "ui-autocomplete-item", item );
+	},
+
+	_renderItem: function( ul, item ) {
+		return $( "<li>" )
+			.append( $( "<a>" ).text( item.label ) )
+			.appendTo( ul );
+	},
+
+	_move: function( direction, event ) {
+		if ( !this.menu.element.is( ":visible" ) ) {
+			this.search( null, event );
+			return;
+		}
+		if ( this.menu.isFirstItem() && /^previous/.test( direction ) ||
+				this.menu.isLastItem() && /^next/.test( direction ) ) {
+			this._value( this.term );
+			this.menu.blur();
+			return;
+		}
+		this.menu[ direction ]( event );
+	},
+
+	widget: function() {
+		return this.menu.element;
+	},
+
+	_value: function() {
+		return this.valueMethod.apply( this.element, arguments );
+	},
+
+	_keyEvent: function( keyEvent, event ) {
+		if ( !this.isMultiLine || this.menu.element.is( ":visible" ) ) {
+			this._move( keyEvent, event );
+
+			// prevents moving cursor to beginning/end of the text field in some browsers
+			event.preventDefault();
+		}
+	}
+});
+
+$.extend( $.ui.autocomplete, {
+	escapeRegex: function( value ) {
+		return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
+	},
+	filter: function(array, term) {
+		var matcher = new RegExp( $.ui.autocomplete.escapeRegex(term), "i" );
+		return $.grep( array, function(value) {
+			return matcher.test( value.label || value.value || value );
+		});
+	}
+});
+
+
+// live region extension, adding a `messages` option
+// NOTE: This is an experimental API. We are still investigating
+// a full solution for string manipulation and internationalization.
+$.widget( "ui.autocomplete", $.ui.autocomplete, {
+	options: {
+		messages: {
+			noResults: "No search results.",
+			results: function( amount ) {
+				return amount + ( amount > 1 ? " results are" : " result is" ) +
+					" available, use up and down arrow keys to navigate.";
+			}
+		}
+	},
+
+	__response: function( content ) {
+		var message;
+		this._superApply( arguments );
+		if ( this.options.disabled || this.cancelSearch ) {
+			return;
+		}
+		if ( content && content.length ) {
+			message = this.options.messages.results( content.length );
+		} else {
+			message = this.options.messages.noResults;
+		}
+		this.liveRegion.text( message );
+	}
+});
+
+}( jQuery ));
+// Simple storage plugin
+// Written by Daniel Mendler
+(function($) {
+    "use strict";
+
+    var storage = {}, data = {};
+    try {
+	if (window.localStorage) {
+            storage = window.localStorage;
+	}
+	if (storage.oleloStorage) {
+	    data = JSON.parse(storage.oleloStorage);
+	}
+    } catch (e) {
+        // Firefox fails when touching localStorage/globalStorage and cookies are disabled
+    }
+
+    function checkKey(key) {
+	if (typeof(key) != 'string' && typeof(key) != 'number') {
+	    throw new TypeError('Key name must be string or numeric');
+	}
+    }
+
+    function save() {
+	try {
+	    storage.oleloStorage = JSON.stringify(data);
+	} catch (e) {
+            // probably cache is full, nothing is saved this way
+        }
+    }
+
+    $.storage = {
+	set: function(key, value){
+	    checkKey(key);
+	    data[key] = value;
+	    save();
+	    return value;
+	},
+	get: function(key, def){
+	    checkKey(key);
+	    if (key in data) {
+		return data[key];
+	    }
+	    return typeof(def) == 'undefined' ? null : def;
+	},
+	remove: function(key){
+	    checkKey(key);
+	    if (key in data){
+		delete data[key];
+		save();
+		return true;
+	    }
+	    return false;
+	}
+    };
+})(jQuery);
+// Very simple i18n plugin
+// Written by Daniel Mendler
+(function($) {
+    "use strict";
+
+    var locale = null, translations = {};
+    $.translations = function(t) {
+        for (var lang in t) {
+            if (!translations[lang]) {
+                translations[lang] = t[lang];
+            } else {
+                for (var name in t[lang]) {
+                    translations[lang][name] = t[lang][name];
+		}
+	    }
+        }
+    };
+    function lookup(locale, name) {
+        var t = translations[locale];
+        return t && t[name];
+    }
+    $.t = function(name, args) {
+        if (!locale) {
+            var html = $('html');
+            locale = html.attr('lang') || html.attr('xml:lang') || 'en';
+        }
+        var i, s = lookup(locale, name);
+        if (!s && (i = locale.indexOf('-'))) {
+            s = lookup(locale.substr(0, i), name);
+	}
+        if (s) {
+	    for (var key in args) {
+                s = s.replace(new RegExp('#{' + key + '}', 'g'), args[key]);
+	    }
+            return s;
+	}
+	return '#' + name;
+    };
+})(jQuery);
+(function($) {
+    "use strict";
+
+    // Add treeview translations
+    $.translations({
+	en: {
+	    confirmUnsaved: 'The page was not saved. Continue?',
+	    pageUnsaved: 'The page was not saved.'
+	},
+	de: {
+	    confirmUnsaved: 'Die Seite wurde nicht gespeichert. Fortsetzen?',
+	    pageUnsaved: 'Die Seite wurde nicht gespeichert.'
+	},
+ 	cs: {
+	    confirmUnsaved: 'Stránka nebyla uložena. Pokračovat?',
+	    pageUnsaved: 'Stránka nebyla uložena.'
+	},
+	fr: {
+	    confirmUnsaved: "La page n'a pas été enregistrée. Voulez vous continuer ?",
+	    pageUnsaved: "La page n'a pas été enregistrée."
+	}
+    });
+
+    function updateUnsaved() {
+	var unsaved = false;
+	switch (this.type) {
+	case 'checkbox':
+	case 'radio':
+	    unsaved = this.checked != this.defaultChecked;
+	    break;
+	case 'hidden':
+	case 'password':
+	case 'text':
+	case 'textarea':
+	case 'file':
+	    unsaved = this.value != this.defaultValue;
+	    break;
+	case 'select-one':
+	case 'select-multiple':
+	    for (var i = 0; i < this.options.length && !unsaved; ++i) {
+                unsaved = this.options[i].selected != this.options[i].defaultSelected;
+	    }
+	    break;
+	}
+	$('label[for=' + this.id + ']').toggleClass('unsaved', unsaved);
+	$(this).toggleClass('unsaved', unsaved);
+    }
+
+    function hasUnsavedChanges(element) {
+	$('input.observe, textarea.observe, select.observe').each(function() {
+	    updateUnsaved.call(this);
+	});
+	return $('.unsaved', element).size() !== 0;
+    }
+
+    $.fn.confirmUnsaved = function() {
+	return !hasUnsavedChanges(this) || confirm($.t('confirmUnsaved'));
+    };
+
+    $(document).on('change autocompletechange', 'input.observe, textarea.observe, select.observe', updateUnsaved);
+
+    var submitForm = false;
+    $(document).on('submit', 'form', function() {
+	submitForm = true;
+    }).bind('reset', function() {
+	$('.unsaved', this).removeClass('unsaved');
+    });
+
+    $(window).bind('beforeunload', function() {
+	if (!submitForm && hasUnsavedChanges(document)) {
+	    return $.t('pageUnsaved');
+	}
+    });
+})(jQuery);
+// Pagination links
+// $('#page_element').pagination('.pagination a');
+// $('#page_element').bind('pageLoaded', function() {});
+// Written by Daniel Mendler
+(function($) {
+    "use strict";
+
+    $.fn.pagination = function(links) {
+	var page = this;
+
+	function loadPage(url) {
+            page.load(url + (url.indexOf('?') < 0 ? '?' : '&') + 'no_layout=1', function() {
+		page.trigger('pageLoaded', [url]);
+            });
+	}
+
+	$(document).on('click', links, function() {
+            $(this).addClass('loading');
+	    if (History.enabled) {
+		History.pushState(null, document.title, this.href);
+	    } else {
+		loadPage(this.href);
+	    }
+            return false;
+        });
+
+	$(window).bind('statechange', function() {
+	    var state = History.getState();
+	    loadPage(state.url);
+	});
+    };
+})(jQuery);
+// Simple, unobtrusive tab widget
+// Written by Daniel Mendler
+(function($) {
+    "use strict";
+
+    $.fn.tabWidget = function(options) {
+        var store = options && options.store;
+	var selected = null;
+	$("> a[href^='#']", this).click(function() {
+            // Handle tab clicks
+	    if (selected.data('tab') == $(this).data('tab')) {
+		return false;
+	    }
+	    if (!selected.data('tab').confirmUnsaved()) {
+		return false;
+	    }
+	    selected.data('tab').hide();
+	    selected.parent().removeClass('selected');
+	    selected = $(this);
+	    selected.data('tab').show();
+	    selected.parent().addClass('selected');
+	    if (store) {
+		$.storage.set(store, selected.data('tab').attr('id'));
+	    }
+	    return false;
+	}).each(function() {
+	    // Hide tabs
+	    var tab = $(this.href.match(/(#.*)$/)[1]);
+	    tab.hide();
+	    $(this).data('tab', tab);
+	});
+
+        // Get selected tab from store
+	if (store) {
+	    var name = $.storage.get(store);
+	    if (name) {
+                selected = $("> a[href='#" + name + "']", this);
+	    }
+	}
+
+        // Get selected tab by class
+	if (!selected || selected.size() === 0) {
+            selected = $(this).filter('.selected').find("> a[href^='#']");
+	}
+
+        // Select first tab
+        if (!selected || selected.size() === 0) {
+            selected = $(this).filter(':first').find("> a[href^='#']");
+	}
+
+	$(this).removeClass('selected');
+
+	// Show initially selected tab
+	if (selected && selected.data('tab')) {
+	    selected.parent().addClass('selected');
+	    selected.data('tab').show();
+	}
+    };
+})(jQuery);
+// Replace timestamps with relative time
+// Written by Daniel Mendler
+(function($) {
+    "use strict";
+
+    $.translations({
+         en: {
+              less_than_a_minute_ago: 'less than a minute ago',
+              a_minute_ago:           'a minute ago',
+              n_minutes_ago:          '#{n} minutes ago',
+              one_hour_ago:           '1 hour ago',
+              n_hours_ago:            '#{n} hours ago',
+              one_day_ago:            '1 day ago',
+              n_days_ago:             '#{n} days ago',
+              one_month_ago:          '1 month ago',
+              n_months_ago:           '#{n} months ago',
+              one_year_ago:           '1 year ago',
+              over_n_years_ago:       'over #{n} years ago'
+         },
+         de: {
+              less_than_a_minute_ago: 'vor weniger als einer Minute',
+              a_minute_ago:           'vor einer Minute',
+              n_minutes_ago:          'vor #{n} Minuten',
+              one_hour_ago:           'vor einer Stunde',
+              n_hours_ago:            'vor #{n} Stunden',
+              one_day_ago:            'vor einem Tag',
+              n_days_ago:             'vor #{n} Tagen',
+              one_month_ago:          'vor einem Monat',
+              n_months_ago:           'vor #{n} Monaten',
+              one_year_ago:           'vor einem Jahr',
+              over_n_years_ago:       'vor über #{n} Jahren'
+         },
+         cs: {
+              less_than_a_minute_ago: 'méně než 1 minuta',
+              a_minute_ago:           'před minutou',
+              n_minutes_ago:          'před #{n} minutami',
+              one_hour_ago:           'před hodinou',
+              n_hours_ago:            'před #{n} hodinami',
+              one_day_ago:            'jeden den',
+              n_days_ago:             'před #{n} dny',
+              one_month_ago:          'jeden měsíc',
+              n_months_ago:           'před #{n} měsíci',
+              one_year_ago:           '1 rok',
+              over_n_years_ago:       'před #{n} lety'
+         },
+         fr: {
+              less_than_a_minute_ago: "il y a moins d'une minute",
+              a_minute_ago:           "il y a une minute",
+              n_minutes_ago:          "il y a #{n} minutes",
+              one_hour_ago:           "il y a 1 heure",
+              n_hours_ago:            "il y a #{n} heures",
+              one_day_ago:            "il y a 1 jour",
+              n_days_ago:             "il y a #{n} jours",
+              one_month_ago:          "il y a 1 mois",
+              n_months_ago:           "il y a #{n} mois",
+              one_year_ago:           "il y a 1 an",
+              over_n_years_ago:       "il y a plus de #{n} ans" 
+         }
+    });
+
+    function timeAgo(from) {
+	var n = Math.floor((new Date().getTime()  - new Date(from * 1000)) / 60000);
+	if (n <= 0)      { return $.t('less_than_a_minute_ago'); }
+	if (n == 1)      { return $.t('a_minute_ago'); }
+	if (n < 45)      { return $.t('n_minutes_ago', {n: n}); }
+	if (n < 90)      { return $.t('one_hour_ago'); }
+	if (n < 1440)    { return $.t('n_hours_ago', {n: Math.round(n / 60)}); }
+	if (n < 2880)    { return $.t('one_day_ago'); }
+	if (n < 43200)   { return $.t('n_days_ago', {n: Math.round(n / 1440)}); }
+	if (n < 86400)   { return $.t('one_month_ago'); }
+	if (n < 525960)  { return $.t('n_months_ago', {n: Math.round(n / 43200)}); }
+	if (n < 1051920) { return $.t('one_year_ago'); }
+	return $.t('over_n_years_ago', {n: Math.round(n / 525960)});
+    }
+
+    $.fn.timeAgo = function() {
+	this.each(function() {
+	    var elem = $(this);
+            var epoch = elem.data('epoch');
+	    if (epoch) {
+		elem.attr('title', elem.text()).html(timeAgo(epoch));
+	    }
+	});
+    };
+})(jQuery);
+// Underline text in elements. Especially useful for accesskeys.
+// Written by Daniel Mendler
+(function($) {
+    "use strict";
+
+    $.extend($.fn, {
+	// Underline text
+	underlineText: function(str) {
+	    this.each(function() {
+		var elem = $(this), text, i;
+		if (elem.children().size() === 0) {
+		    text = elem.text();
+		    i = text.toLowerCase().indexOf(str.toLowerCase());
+		    if (i >= 0) {
+			elem.html(text.substr(0, i) + '<span style="text-decoration: underline">' +
+			          text.substr(i, str.length) + '</span>' + text.substr(i+str.length));
+		    }
+		} else {
+		    elem.children().underlineText(str);
+		}
+	    });
+	},
+	// Underline access key
+	underlineAccessKey: function() {
+	    this.each(function() {
+		var key = $(this).attr('accesskey');
+		if (key) {
+		    $(this).underlineText(key);
+		}
+	    });
+	}
+    });
+})(jQuery);
+(function($) {
+    "use strict";
+
+    $.widget('ui.combobox', {
+	_create: function() {
+	    var input = this.element;
+            input.autocomplete({
+		delay: 0,
+		minLength: 0,
+		source: this.options.source
+	    }).click(function() {
+		if (input.autocomplete('widget').is(':visible')) {
+		    input.autocomplete('close');
+		} else {
+		    input.autocomplete('search', this.value);
+		}
+	    });
+	    $('<button class="ui-combo-button"/>')
+		.attr('tabIndex', -1)
+		.insertAfter(input)
+		.click(function(event) {
+		    event.preventDefault();
+		    // close if already visible
+		    if (input.autocomplete('widget').is(':visible')) {
+			input.autocomplete('close');
+		    } else {
+			// pass empty string as value to search for, displaying all results
+			input.autocomplete('search', '');
+			input.focus();
+		    }
+		});
+	}
+    });
+})(jQuery);
+// Olelo bootstrap
+// Written by Daniel Mendler
+$(function() {
+    "use strict";
+
+    $('html').removeClass('no-js').addClass('js');
+    function pageLoaded() {
+        $('#upload-path', this).each(function() {
+            var elem = this;
+            var old = elem.value;
+            var base = elem.value;
+            if (base.length === 0 || base.match(/\/$/)) {
+                $('#upload-file').change(function() {
+                    if (elem.value == old) {
+                        elem.value = base + this.value;
+                        old = elem.value;
+                    }
+                });
+            }
+        });
+        $('label, #menu, .tabhead, .pagination, .button-bar', this).disableSelection();
+	$('.date', this).timeAgo();
+        $('.tabs', this).each(function() {
+	    $('> li', this).tabWidget();
+	});
+        $('*[accesskey]', this).underlineAccessKey();
+    }
+
+    $('#content').pagination('.pagination a');
+    $('#content').bind('pageLoaded', pageLoaded);
+    pageLoaded.apply($(document));
+
+    $('button[data-target]').live('click', function() {
+	var button = $(this);
+	var form = $(this.form);
+	button.addClass('loading');
+        $.ajax({
+            type: form.attr('method') || 'get',
+            url:  form.attr('action') || window.location.href,
+            data: form.serialize() + '&' + button.attr('name') + '=' + button.attr('value') + '&no_layout=1',
+            success: function(data) {
+		$('#' + button.data('target')).html(data);
+		button.removeClass('loading');
+		if (window.MathJax)
+		    MathJax.Hub.Queue(['Typeset',MathJax.Hub,button.data('target')]);
+            }});
+	return false;
+    });
+});

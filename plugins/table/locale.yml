@@ -1,0 +1,16 @@
+cs:
+  full_article:   'Plný článek'
+  no_articles:    'Žádné články nenalezeny'
+  written_by:     'Napsal: %{author}'
+de:
+  full_article:   'Ganzer Artikel'
+  no_articles:    'Keine Artikel gefunden'
+  written_by:     'verfasst von %{author}'
+en:
+  full_article:   'Full Article'
+  no_articles:    'No articles found'
+  written_by:     'written by %{author}'
+fr:
+  full_article:   "Article complet"
+  no_articles:    "Aucun article trouvé"
+  written_by:     "écrit par %{author}"

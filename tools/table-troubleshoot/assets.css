@@ -1,0 +1,803 @@
+/* aspects/gallery/gallery.css */
+.gallery{border-collapse:separate;border-spacing:0;vertical-align:middle;margin:0;padding:0;border:0;outline:0;width:100%;background:transparent}.gallery td{border:0px none;vertical-align:top;text-align:center}.gallery img{box-shadow:2px 2px 8px #bbb;-webkit-box-shadow:2px 2px 8px #bbb;margin:5px}.gallery img:hover{box-shadow:0px 0px 0px transparent;-webkit-box-shadow:0px 0px 0px transparent;margin:7px 3px 3px 7px}.gallery a.title{display:block;font-size:80%;color:#555}
+
+
+.highlight table { border-spacing: 0; }
+.highlight table td { padding: 5px; }
+.highlight table .gutter { text-align: right; }
+.highlight {
+  color: #faf6e4;
+  background-color: #122b3b;
+}
+.highlight .gl {
+  color: #dee5e7;
+  background-color: #4e5d62;
+}
+.highlight .c, .highlight .cm, .highlight .c1, .highlight .cs {
+  color: #6c8b9f;
+  font-style: italic;
+}
+.highlight .cp {
+  color: #b2fd6d;
+  font-weight: bold;
+  font-style: italic;
+}
+.highlight .err {
+  color: #fefeec;
+  background-color: #cc0000;
+}
+.highlight .gr {
+  color: #fefeec;
+  background-color: #cc0000;
+}
+.highlight .k, .highlight .kd {
+  color: #f6dd62;
+  font-weight: bold;
+}
+.highlight .o, .highlight .ow {
+  color: #4df4ff;
+}
+.highlight .p {
+  color: #4df4ff;
+}
+.highlight .gd {
+  color: #cc0000;
+}
+.highlight .gi {
+  color: #b2fd6d;
+}
+.highlight .ge {
+  font-style: italic;
+}
+.highlight .gs {
+  font-weight: bold;
+}
+.highlight .gt {
+  color: #dee5e7;
+  background-color: #4e5d62;
+}
+.highlight .kc {
+  color: #f696db;
+  font-weight: bold;
+}
+.highlight .kn {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .kp {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .kr {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .gh {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .gu {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .kt {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+.highlight .no {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+.highlight .nc {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+.highlight .nd {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+.highlight .nn {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+.highlight .bp {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+.highlight .ne {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+.highlight .nl {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .nt {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .m, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .il, .highlight .mo {
+  color: #f696db;
+  font-weight: bold;
+}
+.highlight .ld {
+  color: #f696db;
+  font-weight: bold;
+}
+.highlight .ss {
+  color: #f696db;
+  font-weight: bold;
+}
+.highlight .s, .highlight .sb, .highlight .sd, .highlight .s2, .highlight .sh, .highlight .sx, .highlight .sr, .highlight .s1 {
+  color: #fff0a6;
+  font-weight: bold;
+}
+.highlight .se {
+  color: #4df4ff;
+  font-weight: bold;
+}
+.highlight .sc {
+  color: #4df4ff;
+  font-weight: bold;
+}
+.highlight .si {
+  color: #4df4ff;
+  font-weight: bold;
+}
+.highlight .nb {
+  font-weight: bold;
+}
+.highlight .ni {
+  color: #999999;
+  font-weight: bold;
+}
+.highlight .w {
+  color: #BBBBBB;
+}
+.highlight .nf {
+  color: #a8e1fe;
+}
+.highlight .py {
+  color: #a8e1fe;
+}
+.highlight .na {
+  color: #a8e1fe;
+}
+.highlight .nv, .highlight .vc, .highlight .vg, .highlight .vi {
+  color: #a8e1fe;
+  font-weight: bold;
+}
+/* blog/blog.css */
+.blog>.article{clear:both;width:100%}.blog>.article>h2{margin:0}.blog>.article>.author,.blog>.article>.date{float:left;font-size:90%;color:#555555;margin:0.2em 0.4em 1em 0}.blog>.article>.content{clear:both;width:100%}.blog>.article>.full{clear:both;float:right}.blog-menu{border-collapse:separate;border-spacing:0;vertical-align:middle;margin:0;padding:0;border:0;outline:0;box-shadow:0px 0px 0px transparent;-webkit-box-shadow:0px 0px 0px transparent}.blog-menu tr{background:transparent}.blog-menu tr td{vertical-align:top}
+
+
+/* misc/fancybox/jquery.fancybox.css */
+#fancybox-loading{position:fixed;top:50%;left:50%;width:40px;height:40px;margin-top:-20px;margin-left:-20px;cursor:pointer;overflow:hidden;z-index:1104;display:none}#fancybox-loading div{position:absolute;top:0;left:0;width:40px;height:480px;background-image:url("misc/fancybox/images/fancybox.png")}#fancybox-overlay{position:absolute;top:0;left:0;width:100%;z-index:1100;display:none}#fancybox-tmp{padding:0;margin:0;border:0;overflow:auto;display:none}#fancybox-wrap{position:absolute;top:0;left:0;padding:20px;z-index:1101;outline:none;display:none}#fancybox-outer{position:relative;width:100%;height:100%;background:#fff}#fancybox-content{width:0;height:0;padding:0;outline:none;position:relative;overflow:hidden;z-index:1102;border:0px solid #fff}#fancybox-hide-sel-frame{position:absolute;top:0;left:0;width:100%;height:100%;background:transparent;z-index:1101}#fancybox-close{position:absolute;top:-15px;right:-15px;width:30px;height:30px;background:transparent url("misc/fancybox/images/fancybox.png") -40px 0px;cursor:pointer;z-index:1103;display:none}#fancybox-error{color:#444;font:normal 12px/20px Arial;padding:14px;margin:0}#fancybox-img{width:100%;height:100%;padding:0;margin:0;border:none;outline:none;line-height:0;vertical-align:top}#fancybox-frame{width:100%;height:100%;border:none;display:block}#fancybox-left,#fancybox-right{position:absolute;bottom:0px;height:100%;width:35%;cursor:pointer;outline:none;background:transparent url("misc/fancybox/images/blank.gif");z-index:1102;display:none}#fancybox-left{left:0px}#fancybox-right{right:0px}#fancybox-left-ico,#fancybox-right-ico{position:absolute;top:50%;left:-9999px;width:30px;height:30px;margin-top:-15px;cursor:pointer;z-index:1102;display:block}#fancybox-left-ico{background-image:url("misc/fancybox/images/fancybox.png");background-position:-40px -30px}#fancybox-right-ico{background-image:url("misc/fancybox/images/fancybox.png");background-position:-40px -60px}#fancybox-left:hover,#fancybox-right:hover{visibility:visible}#fancybox-left:hover span{left:20px}#fancybox-right:hover span{left:auto;right:20px}.fancybox-bg{position:absolute;padding:0;margin:0;border:0;width:20px;height:20px;z-index:1001}#fancybox-bg-n{top:-20px;left:0;width:100%;background-image:url("misc/fancybox/images/fancybox-x.png")}#fancybox-bg-ne{top:-20px;right:-20px;background-image:url("misc/fancybox/images/fancybox.png");background-position:-40px -162px}#fancybox-bg-e{top:0;right:-20px;height:100%;background-image:url("misc/fancybox/images/fancybox-y.png");background-position:-20px 0px}#fancybox-bg-se{bottom:-20px;right:-20px;background-image:url("misc/fancybox/images/fancybox.png");background-position:-40px -182px}#fancybox-bg-s{bottom:-20px;left:0;width:100%;background-image:url("misc/fancybox/images/fancybox-x.png");background-position:0px -20px}#fancybox-bg-sw{bottom:-20px;left:-20px;background-image:url("misc/fancybox/images/fancybox.png");background-position:-40px -142px}#fancybox-bg-w{top:0;left:-20px;height:100%;background-image:url("misc/fancybox/images/fancybox-y.png")}#fancybox-bg-nw{top:-20px;left:-20px;background-image:url("misc/fancybox/images/fancybox.png");background-position:-40px -122px}#fancybox-title{font-family:Helvetica;font-size:12px;z-index:1102}.fancybox-title-inside{padding-bottom:10px;text-align:center;color:#333;background:#fff;position:relative}.fancybox-title-outside{padding-top:10px;color:#fff}.fancybox-title-over{position:absolute;bottom:0;left:0;color:#FFF;text-align:left}#fancybox-title-over{padding:10px;background-image:url("misc/fancybox/images/fancy_title_over.png");display:block}.fancybox-title-float{position:absolute;left:0;bottom:-20px;height:32px}#fancybox-title-float-wrap{border:none;border-collapse:collapse;width:auto}#fancybox-title-float-wrap td{border:none;white-space:nowrap}#fancybox-title-float-left{padding:0 0 0 15px;background:url("misc/fancybox/images/fancybox.png") -40px -90px no-repeat}#fancybox-title-float-main{color:#FFF;line-height:29px;font-weight:bold;padding:0 0 3px 0;background:url("misc/fancybox/images/fancybox-x.png") 0px -40px}#fancybox-title-float-right{padding:0 0 0 15px;background:url("misc/fancybox/images/fancybox.png") -55px -90px no-repeat}
+
+
+/* table/handsontable/jquery_handsontable_full.css */
+/**
+ * Handsontable 0.8.17
+ * Handsontable is a simple jQuery plugin for editable tables with basic copy-paste compatibility with Excel and Google Docs
+ *
+ * Copyright 2012, Marcin Warpechowski
+ * Licensed under the MIT license.
+ * http://handsontable.com/
+ *
+ * Date: Sun Mar 31 2013 19:46:52 GMT+0200 (Central European Daylight Time)
+ */
+
+.handsontable {
+  position: relative;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.3em;
+  font-size: 13px;
+}
+
+.handsontable.hidden {
+  display: none;
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.handsontable * {
+  box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+}
+
+.handsontable table {
+  border-collapse: separate; /*it must be separate, otherwise there are offset miscalculations in WebKit: http://stackoverflow.com/questions/2655987/border-collapse-differences-in-ff-and-webkit*/
+  position: relative;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -ms-user-select: none;
+  /*user-select: none; /*no browser supports unprefixed version*/
+  border-spacing: 0;
+  margin: 0;
+  border-width: 0;
+  table-layout: fixed;
+  width: 0;
+  outline-width: 0;
+  /* reset bootstrap table style. for more info see: https://github.com/warpech/jquery-handsontable/issues/224 */
+  max-width: none;
+  max-height: none;
+}
+
+.handsontable col {
+  width: 50px;
+}
+
+.handsontable col.rowHeader {
+  width: 50px;
+}
+
+.handsontable th,
+.handsontable td {
+  border-right: 1px solid #CCC;
+  border-bottom: 1px solid #CCC;
+  height: 22px;
+  empty-cells: show;
+  line-height: 21px;
+  padding: 0 4px 0 4px; /* top, bottom padding different than 0 is handled poorly by FF with HTML5 doctype */
+  background-color: #FFF;
+  font-size: 12px;
+  vertical-align: top;
+  overflow: hidden;
+  outline-width: 0;
+}
+
+.handsontable th:last-child {
+  /*Foundation framework fix*/
+  border-right: 1px solid #CCC;
+  border-bottom: 1px solid #CCC;
+}
+
+.handsontable tr:first-child th.htNoFrame,
+.handsontable th:first-child.htNoFrame,
+.handsontable th.htNoFrame {
+  border-left-width: 0;
+  background-color: white;
+  border-color: #FFF;
+}
+
+.handsontable th:first-child,
+.handsontable td:first-child,
+.handsontable .htNoFrame + th,
+.handsontable .htNoFrame + td {
+  border-left: 1px solid #CCC;
+}
+
+.handsontable tr:first-child th,
+.handsontable tr:first-child td {
+  border-top: 1px solid #CCC;
+}
+
+.handsontable thead tr:last-child th {
+  border-bottom-width: 0;
+}
+
+.handsontable thead tr.lastChild th {
+  border-bottom-width: 0;
+}
+
+.handsontable th {
+  background-color: #EEE;
+  color: #222;
+  text-align: center;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.handsontable th .small {
+  font-size: 12px;
+}
+
+.handsontable thead th {
+  padding: 0;
+}
+
+.handsontable th.active {
+  background-color: #CCC;
+}
+
+.handsontable thead th .relative {
+  position: relative;
+  padding: 2px 4px;
+}
+
+/* plugins */
+
+.handsontable .manualColumnMover {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: transparent;
+  width: 5px;
+  height: 25px;
+  z-index: 999;
+  cursor: move;
+}
+
+.handsontable th .manualColumnMover:hover,
+.handsontable th .manualColumnMover.active {
+  background-color: #88F;
+}
+
+.handsontable .manualColumnResizer {
+  position: absolute;
+  right: -1px;
+  top: 0;
+  background-color: transparent;
+  width: 5px;
+  height: 25px;
+  z-index: 999;
+  cursor: col-resize;
+}
+
+.handsontable th .manualColumnResizer:hover,
+.handsontable .manualColumnResizerLine .manualColumnResizer {
+  background-color: #AAB;
+}
+
+.handsontable .columnSorting:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* border line */
+.handsontable .wtBorder {
+  position: absolute;
+  font-size: 0;
+}
+
+.handsontable td.area {
+  background-color: #EEF4FF;
+}
+
+/* fill handle */
+.handsontable .wtBorder.corner {
+  font-size: 0;
+  cursor: crosshair;
+}
+
+.handsontable .htBorder.htFillBorder {
+  background: red;
+  width: 1px;
+  height: 1px;
+}
+
+/* textarea border color */
+textarea.handsontableInput {
+  border: 2px solid #5292F7;
+  outline-width: 0;
+  margin: 0;
+  padding: 1px 4px 0 2px;
+  font-family: Arial, Helvetica, sans-serif; /*repeat from .handsontable (inherit doesn't work with IE<8) */
+  line-height: 1.3em; /*repeat from .handsontable (inherit doesn't work with IE<8) */
+  font-size: 13px;
+  box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.4);
+  resize: none;
+
+  /*below are needed to overwrite stuff added by jQuery UI Bootstrap theme*/
+  display: inline-block;
+  font-size: 13px;
+  color: #000;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+}
+
+.handsontableInputHolder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+}
+
+/*
+AutocompleteRenderer down arrow
+*/
+.handsontable .htAutocomplete {
+  position: relative;
+  padding-right: 20px;
+}
+
+.handsontable .htAutocompleteArrow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 10px;
+  color: #EEE;
+  cursor: default;
+  width: 16px;
+  text-align: center;
+}
+
+.handsontable td .htAutocompleteArrow:hover {
+  color: #777;
+}
+
+/*
+CheckboxRenderer
+*/
+.handsontable .htCheckboxRendererInput.noValue {
+  opacity: 0.5;
+}
+
+/*
+NumericRenderer
+*/
+.handsontable .htNumeric {
+  text-align: right;
+}
+
+/* typeahead rules. Needed only if you are using the autocomplete feature */
+.handsontable .typeahead {
+  position: absolute;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.3em;
+  font-size: 13px;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  float: left;
+  display: none;
+  min-width: 160px;
+  padding: 4px 0;
+  margin: 2px 0 0 0;
+  list-style: none;
+  background-color: white;
+  border-color: #CCC;
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: solid;
+  border-width: 1px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+}
+
+.handsontable .typeahead li {
+  line-height: 18px;
+  min-height: 18px;
+  display: list-item;
+  margin: 0;
+}
+
+.handsontable .typeahead a {
+  display: block;
+  padding: 3px 15px;
+  clear: both;
+  font-weight: normal;
+  line-height: 18px;
+  min-height: 18px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.handsontable .typeahead li > a:hover,
+.handsontable .typeahead .active > a,
+.handsontable .typeahead .active > a:hover {
+  color: white;
+  text-decoration: none;
+  background-color: #08C;
+}
+
+.handsontable .typeahead a {
+  color: #08C;
+  text-decoration: none;
+}
+
+/*context menu rules*/
+ul.context-menu-list {
+  color: black;
+}
+
+ul.context-menu-list li {
+  margin-bottom: 0; /*Foundation framework fix*/
+}
+
+/**
+ * dragdealer
+ */
+
+.handsontable .dragdealer {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  background: #F8F8F8;
+  border: 1px solid #DDD;
+}
+
+.handsontable .dragdealer .handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #C5C5C5;
+}
+
+.handsontable .dragdealer .disabled {
+  background: #898989;
+}
+/*!
+ * jQuery contextMenu - Plugin for simple contextMenu handling
+ *
+ * Version: 1.5.25
+ *
+ * Authors: Rodney Rehm, Addy Osmani (patches for FF)
+ * Web: http://medialize.github.com/jQuery-contextMenu/
+ *
+ * Licensed under
+ *   MIT License http://www.opensource.org/licenses/mit-license
+ *   GPL v3 http://opensource.org/licenses/GPL-3.0
+ *
+ */
+
+.context-menu-list {
+    margin:0; 
+    padding:0;
+    
+    min-width: 120px;
+    max-width: 250px;
+    display: inline-block;
+    position: absolute;
+    list-style-type: none;
+    
+    border: 1px solid #DDD;
+    background: #EEE;
+    
+    -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+       -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        -ms-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+         -o-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 11px;
+}
+
+.context-menu-item {
+    padding: 2px 2px 2px 24px;
+    background-color: #EEE;
+    position: relative;
+    -webkit-user-select: none;
+       -moz-user-select: -moz-none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+.context-menu-separator {
+    padding-bottom:0;
+    border-bottom: 1px solid #DDD;
+}
+
+.context-menu-item > label > input,
+.context-menu-item > label > textarea {
+    -webkit-user-select: text;
+       -moz-user-select: text;
+        -ms-user-select: text;
+            user-select: text;
+}
+
+.context-menu-item.hover {
+    cursor: pointer;
+    background-color: #39F;
+}
+
+.context-menu-item.disabled {
+    color: #666;
+}
+
+.context-menu-input.hover,
+.context-menu-item.disabled.hover {
+    cursor: default;
+    background-color: #EEE;
+}
+
+.context-menu-submenu:after {
+    content: ">";
+    color: #666;
+    position: absolute;
+    top: 0;
+    right: 3px;
+    z-index: 1;
+}
+
+/* icons
+    #protip:
+    In case you want to use sprites for icons (which I would suggest you do) have a look at
+    http://css-tricks.com/13224-pseudo-spriting/ to get an idea of how to implement 
+    .context-menu-item.icon:before {}
+ */
+.context-menu-item.icon { min-height: 18px; background-repeat: no-repeat; background-position: 4px 2px; }
+.context-menu-item.icon-edit { background-image: url(images/page_white_edit.png); }
+.context-menu-item.icon-cut { background-image: url(images/cut.png); }
+.context-menu-item.icon-copy { background-image: url(images/page_white_copy.png); }
+.context-menu-item.icon-paste { background-image: url(images/page_white_paste.png); }
+.context-menu-item.icon-delete { background-image: url(images/page_white_delete.png); }
+.context-menu-item.icon-add { background-image: url(images/page_white_add.png); }
+.context-menu-item.icon-quit { background-image: url(images/door.png); }
+
+/* vertically align inside labels */
+.context-menu-input > label > * { vertical-align: top; }
+
+/* position checkboxes and radios as icons */
+.context-menu-input > label > input[type="checkbox"],
+.context-menu-input > label > input[type="radio"] {
+    margin-left: -17px;
+}
+.context-menu-input > label > span {
+    margin-left: 5px;
+}
+
+.context-menu-input > label,
+.context-menu-input > label > input[type="text"],
+.context-menu-input > label > textarea,
+.context-menu-input > label > select {
+    display: block;
+    width: 100%;
+    
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+        -ms-box-sizing: border-box;
+         -o-box-sizing: border-box;
+            box-sizing: border-box;
+}
+
+.context-menu-input > label > textarea {
+    height: 100px;
+}
+.context-menu-item > .context-menu-list {
+    display: none;
+    /* re-positioned by js */
+    right: -5px;
+    top: 5px;
+}
+
+.context-menu-item.hover > .context-menu-list {
+    display: block;
+}
+
+.context-menu-accesskey {
+    text-decoration: underline;
+}
+
+
+/* tags/gist/gist-embed.css */
+.gist {
+  color: #000;
+}
+
+  .gist div {
+    padding: 0;
+    margin: 0;
+  }
+
+  .gist .gist-file {
+    border: 1px solid #dedede; /* gray */
+    font-family: Monaco, "Courier New", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", monospace;
+    margin-bottom: 1em;
+  }
+
+    .gist .gist-file .gist-meta {
+      overflow: hidden;
+      font-size: 85%;
+      padding: .5em;
+      color: #666;
+      background-color: #eaeaea;
+    }
+
+      .gist .gist-file .gist-meta a {
+        color: #369;
+      }
+
+      .gist .gist-file .gist-meta a:visited {
+        color: #737;
+      }
+
+    .gist .gist-file .gist-data {
+      overflow: auto;
+      word-wrap: normal;
+      background-color: #f8f8ff;
+      border-bottom: 1px solid #ddd;
+      font-size: 100%;
+    }
+
+      .gist .gist-file .gist-data pre {
+        font-family: 'Bitstream Vera Sans Mono', 'Courier', monospace;
+        background: transparent !important;
+        margin: 0 !important;
+        border: none !important;
+        padding: .25em .5em .5em .5em !important;
+      }
+
+        .gist .gist-file .gist-data .gist-highlight {
+          background: transparent !important;
+        }
+
+        .gist .gist-file .gist-data .gist-line-numbers {
+          background-color: #ececec;
+          color: #aaa;
+          border-right: 1px solid #ddd;
+          text-align: right;
+        }
+
+          .gist .gist-file .gist-data .gist-line-numbers span {
+            clear: right;
+            display: block;
+          }
+
+.gist-syntax  { background: #ffffff; }
+.gist-syntax .c { color: #999988; font-style: italic } /* Comment */
+.gist-syntax .err { color: #a61717; background-color: #e3d2d2 } /* Error */
+.gist-syntax .k { color: #000000; font-weight: bold } /* Keyword */
+.gist-syntax .o { color: #000000; font-weight: bold } /* Operator */
+.gist-syntax .cm { color: #999988; font-style: italic } /* Comment.Multiline */
+.gist-syntax .cp { color: #999999; font-weight: bold } /* Comment.Preproc */
+.gist-syntax .c1 { color: #999988; font-style: italic } /* Comment.Single */
+.gist-syntax .cs { color: #999999; font-weight: bold; font-style: italic } /* Comment.Special */
+.gist-syntax .gd { color: #000000; background-color: #ffdddd } /* Generic.Deleted */
+.gist-syntax .gd .x { color: #000000; background-color: #ffaaaa } /* Generic.Deleted.Specific */
+.gist-syntax .ge { color: #000000; font-style: italic } /* Generic.Emph */
+.gist-syntax .gr { color: #aa0000 } /* Generic.Error */
+.gist-syntax .gh { color: #999999 } /* Generic.Heading */
+.gist-syntax .gi { color: #000000; background-color: #ddffdd } /* Generic.Inserted */
+.gist-syntax .gi .x { color: #000000; background-color: #aaffaa } /* Generic.Inserted.Specific */
+.gist-syntax .go { color: #888888 } /* Generic.Output */
+.gist-syntax .gp { color: #555555 } /* Generic.Prompt */
+.gist-syntax .gs { font-weight: bold } /* Generic.Strong */
+.gist-syntax .gu { color: #aaaaaa } /* Generic.Subheading */
+.gist-syntax .gt { color: #aa0000 } /* Generic.Traceback */
+.gist-syntax .kc { color: #000000; font-weight: bold } /* Keyword.Constant */
+.gist-syntax .kd { color: #000000; font-weight: bold } /* Keyword.Declaration */
+.gist-syntax .kp { color: #000000; font-weight: bold } /* Keyword.Pseudo */
+.gist-syntax .kr { color: #000000; font-weight: bold } /* Keyword.Reserved */
+.gist-syntax .kt { color: #445588; font-weight: bold } /* Keyword.Type */
+.gist-syntax .m { color: #009999 } /* Literal.Number */
+.gist-syntax .s { color: #d14 } /* Literal.String */
+.gist-syntax .na { color: #008080 } /* Name.Attribute */
+.gist-syntax .nb { color: #0086B3 } /* Name.Builtin */
+.gist-syntax .nc { color: #445588; font-weight: bold } /* Name.Class */
+.gist-syntax .no { color: #008080 } /* Name.Constant */
+.gist-syntax .ni { color: #800080 } /* Name.Entity */
+.gist-syntax .ne { color: #990000; font-weight: bold } /* Name.Exception */
+.gist-syntax .nf { color: #990000; font-weight: bold } /* Name.Function */
+.gist-syntax .nn { color: #555555 } /* Name.Namespace */
+.gist-syntax .nt { color: #000080 } /* Name.Tag */
+.gist-syntax .nv { color: #008080 } /* Name.Variable */
+.gist-syntax .ow { color: #000000; font-weight: bold } /* Operator.Word */
+.gist-syntax .w { color: #bbbbbb } /* Text.Whitespace */
+.gist-syntax .mf { color: #009999 } /* Literal.Number.Float */
+.gist-syntax .mh { color: #009999 } /* Literal.Number.Hex */
+.gist-syntax .mi { color: #009999 } /* Literal.Number.Integer */
+.gist-syntax .mo { color: #009999 } /* Literal.Number.Oct */
+.gist-syntax .sb { color: #d14 } /* Literal.String.Backtick */
+.gist-syntax .sc { color: #d14 } /* Literal.String.Char */
+.gist-syntax .sd { color: #d14 } /* Literal.String.Doc */
+.gist-syntax .s2 { color: #d14 } /* Literal.String.Double */
+.gist-syntax .se { color: #d14 } /* Literal.String.Escape */
+.gist-syntax .sh { color: #d14 } /* Literal.String.Heredoc */
+.gist-syntax .si { color: #d14 } /* Literal.String.Interpol */
+.gist-syntax .sx { color: #d14 } /* Literal.String.Other */
+.gist-syntax .sr { color: #009926 } /* Literal.String.Regex */
+.gist-syntax .s1 { color: #d14 } /* Literal.String.Single */
+.gist-syntax .ss { color: #990073 } /* Literal.String.Symbol */
+.gist-syntax .bp { color: #999999 } /* Name.Builtin.Pseudo */
+.gist-syntax .vc { color: #008080 } /* Name.Variable.Class */
+.gist-syntax .vg { color: #008080 } /* Name.Variable.Global */
+.gist-syntax .vi { color: #008080 } /* Name.Variable.Instance */
+.gist-syntax .il { color: #009999 } /* Literal.Number.Integer.Long */
+
+
+/* treeview/treeview.css */
+#sidebar-tab-menu a,#sidebar-tab-tree a{text-indent:-999px;width:16px}#sidebar-tab-menu.selected,#sidebar-tab-tree.selected{display:none !important}#sidebar-tab-menu{background:url(treeview/images/tree.png) no-repeat center center !important}#sidebar-tab-tree{background:url(treeview/images/menu.png) no-repeat center center !important}#treeview{position:relative;padding:0;margin:0;width:100%;max-height:600px;font-size:9pt;overflow:auto}#treeview .file-type-7z{background:url(../../static/themes/atlantis/images/filetypes/7z.png) no-repeat center center !important}#treeview .file-type-bz2{background:url(../../static/themes/atlantis/images/filetypes/bz2.png) no-repeat center center !important}#treeview .file-type-doc{background:url(../../static/themes/atlantis/images/filetypes/doc.png) no-repeat center center !important}#treeview .file-type-flac{background:url(../../static/themes/atlantis/images/filetypes/flac.png) no-repeat center center !important}#treeview .file-type-gz{background:url(../../static/themes/atlantis/images/filetypes/gz.png) no-repeat center center !important}#treeview .file-type-html{background:url(../../static/themes/atlantis/images/filetypes/html.png) no-repeat center center !important}#treeview .file-type-java{background:url(../../static/themes/atlantis/images/filetypes/java.png) no-repeat center center !important}#treeview .file-type-jpg{background:url(../../static/themes/atlantis/images/filetypes/jpg.png) no-repeat center center !important}#treeview .file-type-midi{background:url(../../static/themes/atlantis/images/filetypes/midi.png) no-repeat center center !important}#treeview .file-type-mp3{background:url(../../static/themes/atlantis/images/filetypes/mp3.png) no-repeat center center !important}#treeview .file-type-ogg{background:url(../../static/themes/atlantis/images/filetypes/ogg.png) no-repeat center center !important}#treeview .file-type-pdf{background:url(../../static/themes/atlantis/images/filetypes/pdf.png) no-repeat center center !important}#treeview .file-type-php{background:url(../../static/themes/atlantis/images/filetypes/php.png) no-repeat center center !important}#treeview .file-type-png{background:url(../../static/themes/atlantis/images/filetypes/png.png) no-repeat center center !important}#treeview .file-type-ppt{background:url(../../static/themes/atlantis/images/filetypes/ppt.png) no-repeat center center !important}#treeview .file-type-psd{background:url(../../static/themes/atlantis/images/filetypes/psd.png) no-repeat center center !important}#treeview .file-type-rar{background:url(../../static/themes/atlantis/images/filetypes/rar.png) no-repeat center center !important}#treeview .file-type-rb{background:url(../../static/themes/atlantis/images/filetypes/rb.png) no-repeat center center !important}#treeview .file-type-sh{background:url(../../static/themes/atlantis/images/filetypes/sh.png) no-repeat center center !important}#treeview .file-type-tar{background:url(../../static/themes/atlantis/images/filetypes/tar.png) no-repeat center center !important}#treeview .file-type-txt{background:url(../../static/themes/atlantis/images/filetypes/txt.png) no-repeat center center !important}#treeview .file-type-wma{background:url(../../static/themes/atlantis/images/filetypes/wma.png) no-repeat center center !important}#treeview .file-type-xls{background:url(../../static/themes/atlantis/images/filetypes/xls.png) no-repeat center center !important}#treeview .file-type-zip{background:url(../../static/themes/atlantis/images/filetypes/zip.png) no-repeat center center !important}#treeview ul{list-style:none;display:block;clear:both}#treeview ul li{border:none !important;text-indent:0 !important;clear:both}#treeview ul li li{margin:0;padding:0 1em !important}#treeview ul li a,#treeview ul li a:active,#treeview ul li a:hover{font-size:90% !important;font-variant:normal;text-indent:0 !important;margin:0 !important;padding:0 !important;float:left;width:1px;overflow:visible;white-space:nowrap !important;color:#333333;background:transparent}#treeview ul li .hitarea,#treeview ul li .placeholder{width:32px;height:16px;cursor:pointer;float:left}#treeview ul li .hitarea div,#treeview ul li .placeholder div{width:16px;height:16px;float:left}#treeview ul .wait .arrow{background:url(treeview/images/wait.gif) no-repeat center center !important}#treeview ul .collapsed .arrow{background:url(treeview/images/collapsed.png) no-repeat center center}#treeview ul .expanded .arrow{background:url(treeview/images/expanded.png) no-repeat center center}#treeview ul .page{background:url(../../static/themes/atlantis/images/page.png) no-repeat center center}#treeview ul .expanded .folder{background:url(../../static/themes/atlantis/images/folder_open.png) no-repeat center center}#treeview ul .collapsed .folder{background:url(../../static/themes/atlantis/images/folder.png) no-repeat center center}
+

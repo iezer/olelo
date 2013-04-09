@@ -1,10 +1,396 @@
-(function(){var e=function(){var g=typeof document.selection!=="undefined"&&typeof document.selection.createRange!=="undefined";return{getSelectionRange:function(a){var b,c,d;a.focus();if(typeof a.selectionStart!=="undefined"){b=a.selectionStart;c=a.selectionEnd}else if(g){b=document.selection.createRange();c=b.text.length;if(b.parentElement()!==a)throw"Unable to get selection range.";if(a.type==="textarea"){d=b.duplicate();d.moveToElementText(a);d.setEndPoint("EndToEnd",b);b=d.text.length-c}else{a=
-a.createTextRange();a.setEndPoint("EndToStart",b);b=a.text.length}c=b+c}else throw"Unable to get selection range.";return{start:b,end:c}},getSelectionStart:function(a){return this.getSelectionRange(a).start},getSelectionEnd:function(a){return this.getSelectionRange(a).end},setSelectionRange:function(a,b,c){var d;a.focus();if(typeof c==="undefined")c=b;if(typeof a.selectionStart!=="undefined")a.setSelectionRange(b,c);else if(g){d=a.value;a=a.createTextRange();c-=b+d.slice(b+1,c).split("\n").length-
-1;b-=d.slice(0,b).split("\n").length-1;a.move("character",b);a.moveEnd("character",c);a.select()}else throw"Unable to set selection range.";},getSelectedText:function(a){var b=this.getSelectionRange(a);return a.value.substring(b.start,b.end)},insertText:function(a,b,c,d,h){d=d||c;var i=c+b.length,k=a.value.substring(0,c);d=a.value.substr(d);a.value=k+b+d;h===true?this.setSelectionRange(a,c,i):this.setSelectionRange(a,i)},replaceSelectedText:function(a,b,c){var d=this.getSelectionRange(a);this.insertText(a,
-b,d.start,d.end,c)},wrapSelectedText:function(a,b,c,d){b=b+this.getSelectedText(a)+c;this.replaceSelectedText(a,b,d)}}}();window.Selection=e})();
-(function(e){e.fn.extend({getSelectionRange:function(){return Selection.getSelectionRange(this[0])},getSelectionStart:function(){return Selection.getSelectionStart(this[0])},getSelectionEnd:function(){return Selection.getSelectionEnd(this[0])},getSelectedText:function(){return Selection.getSelectedText(this[0])},setSelectionRange:function(g,a){return this.each(function(){Selection.setSelectionRange(this,g,a)})},insertText:function(g,a,b,c){return this.each(function(){Selection.insertText(this,g,a,
-b,c)})},replaceSelectedText:function(g,a){return this.each(function(){Selection.replaceSelectedText(this,g,a)})},wrapSelectedText:function(g,a,b){return this.each(function(){Selection.wrapSelectedText(this,g,a,b)})}})})(jQuery);(function(e){var g={creole:{link:["[[","link text","]]"],bold:["**","bold text","**"],italic:["//","italic text","//"],ul:["* ","list item","",true],ol:["# ","list item","",true],h1:["= ","headline","",true],h2:["== ","headline","",true],h3:["=== ","headline","",true],sub:["~~","subscript","~~"],sup:["^^","superscript","^^"],del:["--","deleted text","--"],ins:["++","inserted text","++"],image:["{{","image","}}"],preformatted:["{{{","preformatted","}}}"]},markdown:{link:function(a){return(a=prompt("link target:",
-a))?["[","link text","]("+a+")"]:null},bold:["**","bold text","**"],italic:["*","italic text","*"],ul:["* ","list item","",true],ol:["1. ","list item","",true],h1:["","headline","\n========",true],h2:["","headline","\n--------",true],image:function(a){return(a=prompt("image path:",a))?["![","image alt text","]("+a+")"]:null},preformatted:["    ","preformatted","",true]},orgmode:{bold:["*","bold text","*"],italic:["/","italic text","/"],ul:["- ","list item",""],ol:["1. ","list item",""],h1:["* ","headline",
-""],h2:["** ","headline",""],h3:["*** ","headline",""]},textile:{link:function(a){return(a=prompt("link target:",a))?['"',"link text",'":'+a]:null},bold:["*","bold text","*"],italic:["_","italic text","_"],ul:["* ","list item","",true],ol:["# ","list item","",true],h1:["h1. ","headline","",true],h2:["h2. ","headline","",true],h3:["h3. ","headline","",true],em:["_","emphasized text","_"],sub:["~","subscript","~"],sup:["^","superscript","^"],del:["-","deleted text","-"],ins:["+","inserted text","+"],
-image:["!","image","!"]}};e.fn.markupEditor=function(a){if(a=g[a]){var b=e('<ul class="button-bar" id="markup-editor"/>'),c=[];for(var d in a)c.push(d);c.sort();for(d=0;d<c.length;++d)b.append('<li><a href="#" id="markup-editor-'+c[d]+'">'+c[d]+"</a></li>");this.before(b);var h=this;e("a",b).click(function(){var i=a[this.id.substr(14)],k=h.getSelectedText();if(typeof i=="function")i=i(k);if(i){var f=h.getSelectionRange(),j=i[0],m=i[1],l=i[2];if(i[3]){h.setSelectionRange(f.start-1,f.start);if(f.start!==
-0&&h.getSelectedText()!="\n")j="\n"+j;h.setSelectionRange(f.end,f.end+1);if(h.getSelectedText()!="\n")l+="\n"}if(f.start==f.end){h.insertText(j+m+l,f.start,f.start,false);h.setSelectionRange(f.start+j.length,f.start+j.length+m.length)}else h.insertText(j+k+l,f.start,f.end,false)}return false})}}})(jQuery);$(function(){var e=Olelo.page_mime;if(e=="application/x-empty"||e=="inode/directory")e=Olelo.default_mime;(e=/text\/x-(\w+)/.exec(e))&&$("#edit-content").markupEditor(e[1])});
+// jquery-text-selection 1.0
+(function() {
+
+  /**
+   *
+   */
+  var Selection = (function() {
+
+  	var hasRange = (typeof document.selection !== 'undefined' && typeof document.selection.createRange !== 'undefined');
+
+    return {
+
+      /**
+       *
+       */
+      getSelectionRange: function(el) {
+
+    	  var start,
+    	      end,
+    	      range,
+            rangeLength,
+            duplicateRange,
+            textRange;
+
+    	  el.focus();
+
+    	  // Mozilla / Safari
+    	  if (typeof el.selectionStart !== 'undefined') {
+
+    	    start = el.selectionStart;
+    	    end   = el.selectionEnd;
+
+    	  // IE
+    	  } else if (hasRange) {
+
+    	    range = document.selection.createRange();
+    	    rangeLength = range.text.length;
+
+    	    if(range.parentElement() !== el) {
+    	      throw('Unable to get selection range.');
+    	    }
+
+    	    // Textarea
+    	    if (el.type === 'textarea') {
+
+    	      duplicateRange = range.duplicate();
+    	      duplicateRange.moveToElementText(el);
+    	      duplicateRange.setEndPoint('EndToEnd', range);
+
+    	      start = duplicateRange.text.length - rangeLength;
+
+    	    // Text Input
+    	    } else {
+
+    	      textRange = el.createTextRange();
+    	      textRange.setEndPoint("EndToStart", range);
+
+    	      start = textRange.text.length;
+    	    }
+
+    	    end = start + rangeLength;
+
+    	  // Unsupported type
+    	  } else {
+    	    throw('Unable to get selection range.');
+    	  }
+
+    	  return {
+    	    start: start,
+    	    end:   end
+    	  };
+      },
+
+
+      /**
+       *
+       */
+    	getSelectionStart: function(el) {
+        return this.getSelectionRange(el).start;
+      },
+
+
+      /**
+       *
+       */
+      getSelectionEnd: function(el) {
+        return this.getSelectionRange(el).end;
+      },
+
+
+      /**
+       *
+       */
+      setSelectionRange: function(el, start, end) {
+
+        var value,
+            range;
+
+    	  el.focus();
+
+    	  if (typeof end === 'undefined') {
+    	    end = start;
+    	  }
+
+    	  // Mozilla / Safari
+    	  if (typeof el.selectionStart !== 'undefined') {
+
+    	    el.setSelectionRange(start, end);
+
+    	  // IE
+    	  } else if (hasRange) {
+
+          value = el.value;
+    	    range = el.createTextRange();
+    	    end   -= start + value.slice(start + 1, end).split("\n").length - 1;
+    	    start -= value.slice(0, start).split("\n").length - 1;
+    	    range.move('character', start);
+    	    range.moveEnd('character', end);
+    	    range.select();
+
+    	  // Unsupported
+    	  } else {
+    	    throw('Unable to set selection range.');
+    	  }
+      },
+
+
+      /**
+       *
+       */
+      getSelectedText: function(el) {
+    	  var selection = this.getSelectionRange(el);
+    	  return el.value.substring(selection.start, selection.end);
+      },
+
+
+      /**
+       *
+       */
+      insertText: function(el, text, start, end, selectText) {
+
+        end = end || start;
+
+    		var textLength = text.length,
+    		    selectionEnd  = start + textLength,
+    		    beforeText = el.value.substring(0, start),
+            afterText  = el.value.substr(end);
+
+    	  el.value = beforeText + text + afterText;
+
+    	  if (selectText === true) {
+    	    this.setSelectionRange(el, start, selectionEnd);
+    	  } else {
+    	    this.setSelectionRange(el, selectionEnd);
+    	  }
+      },
+
+
+      /**
+       *
+       */
+      replaceSelectedText: function(el, text, selectText) {
+    	  var selection = this.getSelectionRange(el);
+    		this.insertText(el, text, selection.start, selection.end, selectText);
+      },
+
+
+      /**
+       *
+       */
+      wrapSelectedText: function(el, beforeText, afterText, selectText) {
+    	  var text = beforeText + this.getSelectedText(el) + afterText;
+    		this.replaceSelectedText(el, text, selectText);
+      }
+
+    };
+  })();
+
+
+  /**
+   *
+   */
+  window.Selection = Selection;
+
+
+})();
+
+(function($) {
+
+
+  $.fn.extend({
+
+    /**
+     *
+     */
+    getSelectionRange: function() {
+	    return Selection.getSelectionRange(this[0]);
+  	},
+
+
+    /**
+     *
+     */
+  	getSelectionStart: function() {
+  	  return Selection.getSelectionStart(this[0]);
+  	},
+
+
+    /**
+     *
+     */
+  	getSelectionEnd: function() {
+  	  return Selection.getSelectionEnd(this[0]);
+  	},
+
+
+    /**
+     *
+     */
+  	getSelectedText: function() {
+	    return Selection.getSelectedText(this[0]);
+  	},
+
+
+    /**
+     *
+     */
+  	setSelectionRange: function(start, end) {
+      return this.each(function() {
+        Selection.setSelectionRange(this, start, end);
+      });
+  	},
+
+
+    /**
+     *
+     */
+  	insertText: function(text, start, end, selectText) {
+      return this.each(function() {
+        Selection.insertText(this, text, start, end, selectText);
+      });
+  	},
+
+
+    /**
+     *
+     */
+  	replaceSelectedText: function(text, selectText) {
+      return this.each(function() {
+        Selection.replaceSelectedText(this, text, selectText);
+      });
+  	},
+
+
+    /**
+     *
+     */
+  	wrapSelectedText: function(beforeText, afterText, selectText) {
+      return this.each(function() {
+        Selection.wrapSelectedText(this, beforeText, afterText, selectText);
+      });
+  	}
+
+  });
+
+
+})(jQuery);(function($) {
+    "use strict";
+
+    var markups = {
+        creole: {
+            link:   ['[[', 'link text', ']]'],
+            bold:   ['**', 'bold text', '**'],
+            italic: ['//', 'italic text', '//'],
+            ul:     ['* ', 'list item', '', true],
+            ol:     ['# ', 'list item', '', true],
+            h1:     ['= ', 'headline', '', true],
+            h2:     ['== ', 'headline', '', true],
+            h3:     ['=== ', 'headline', '', true],
+            sub:    ['~~', 'subscript', '~~'],
+            sup:    ['^^', 'superscript', '^^'],
+            del:    ['--', 'deleted text', '--'],
+            ins:    ['++', 'inserted text', '++'],
+            image:  ['{{', 'image', '}}'],
+            preformatted: ['{{{', 'preformatted', '}}}']
+        },
+        markdown: {
+            link: function(selected) {
+                var target = prompt('link target:', selected);
+                return target ? ['[', 'link text', '](' + target + ')'] : null;
+            },
+            bold:   ['**', 'bold text', '**'],
+            italic: ['*',  'italic text', '*'],
+            ul:     ['* ', 'list item', '', true],
+            ol:     ['1. ', 'list item', '', true],
+            h1:     ['', 'headline', '\n========', true],
+            h2:     ['', 'headline', '\n--------', true],
+            image: function(selected) {
+                var target = prompt('image path:', selected);
+                return target ? ['![', 'image alt text', '](' + target + ')'] : null;
+            },
+            preformatted: ['    ', 'preformatted', '', true]
+        },
+        orgmode: {
+            bold:   ['*', 'bold text', '*'],
+            italic: ['/', 'italic text', '/'],
+            ul:     ['- ', 'list item', ''],
+            ol:     ['1. ', 'list item', ''],
+            h1:     ['* ',  'headline', ''],
+            h2:     ['** ', 'headline', ''],
+            h3:     ['*** ', 'headline', '']
+        },
+        textile: {
+            link: function(selected) {
+                var target = prompt('link target:', selected);
+                return target ? ['"', 'link text', '":' + target] : null;
+            },
+            bold:   ['*', 'bold text', '*'],
+            italic: ['_', 'italic text', '_'],
+            ul:     ['* ', 'list item', '', true],
+            ol:     ['# ', 'list item', '', true],
+            h1:     ['h1. ', 'headline', '', true],
+            h2:     ['h2. ', 'headline', '', true],
+            h3:     ['h3. ', 'headline', '', true],
+            em:     ['_', 'emphasized text', '_'],
+            sub:    ['~', 'subscript', '~'],
+            sup:    ['^', 'superscript', '^'],
+            del:    ['-', 'deleted text', '-'],
+            ins:    ['+', 'inserted text', '+'],
+            image:  ['!', 'image', '!']
+        }
+    };
+
+    function insertMarkup(textarea, config) {
+        var selected = textarea.getSelectedText();
+        if (typeof config == 'function') {
+            config = config(selected);
+        }
+        if (!config) {
+            return;
+        }
+        var range = textarea.getSelectionRange();
+        var prefix = config[0], content = config[1], suffix = config[2], newline = config[3];
+        if (newline) {
+            textarea.setSelectionRange(range.start - 1, range.start);
+            if (range.start !== 0 && textarea.getSelectedText() != '\n') {
+                prefix = '\n' + prefix;
+            }
+            textarea.setSelectionRange(range.end, range.end + 1);
+            if (textarea.getSelectedText() != '\n') {
+                suffix += '\n';
+            }
+        }
+        if (range.start == range.end) {
+            textarea.insertText(prefix + content + suffix, range.start, range.start, false);
+            textarea.setSelectionRange(range.start + prefix.length, range.start + prefix.length + content.length);
+        } else {
+            textarea.insertText(prefix + selected + suffix, range.start, range.end, false);
+        }
+    }
+
+    $.fn.markupEditor = function(markup) {
+        markup = markups[markup];
+        if (markup) {
+            var list = $('<ul class="button-bar" id="markup-editor"/>');
+
+            var buttons = [];
+            for (var k in markup) {
+                 buttons.push(k);
+            }
+            buttons.sort();
+            for (var i = 0; i < buttons.length; ++i) {
+                list.append('<li><a href="#" id="markup-editor-' + buttons[i] + '">' + buttons[i] + '</a></li>');
+            }
+            this.before(list);
+
+            var textarea = this;
+            $('a', list).click(function() {
+                insertMarkup(textarea, markup[this.id.substr(14)]);
+                return false;
+            });
+        }
+    };
+})(jQuery);
+$(function() {
+    "use strict";
+
+    var mime = Olelo.page_mime;
+    if (mime == 'application/x-empty' || mime == 'inode/directory') {
+	mime = Olelo.default_mime;
+    }
+    var match = /text\/x-(\w+)/.exec(mime);
+    if (match) {
+	$('#edit-content').markupEditor(match[1]);
+    }
+});

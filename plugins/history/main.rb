@@ -1,6 +1,6 @@
 description 'History menu'
 dependencies 'utils/assets', 'utils/cache'
-export_scripts '*.js'
+export_scripts 'script/*.js'
 
 class ::Olelo::Application
   get '/compare/:versions(/(:path))', versions: '(?:\w+)\.{2,3}(?:\w+)' do

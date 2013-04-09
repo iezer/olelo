@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" class="no-js" lang="en-US">
+<head>
+  <meta charset='utf-8'>
+  <title>Handsontable - jQuery grid editor. Excel-like grid editing with HTML &amp; JavaScript</title>
+
+  <!--
+  Loading Handsontable (full distribution that includes all dependencies apart from jQuery)
+  -->
+  <!-- script src="jquery.min.js"></script -->
+  <link rel="stylesheet" media="screen" href="style.css">
+	<script src="script.js"></script>
+		<script type="text/javascript">Olelo = {"path":"tabler","base_path":"/","default_mime":"text/x-creole","page_name":"tabler","page_new":false,"page_modified":false,"page_path":"tabler","page_title":"tabler","page_version":"653b85e17a320d12357703a298d095e24f41ed77","page_next_version":"","page_previous_version":"6d82b2ae912fc0813dad9a8d708633420947468e","page_mime":"text/x-creole"};</script>
+  <link rel="stylesheet" media="screen" href="assets.css">
+	  <!-- script src="assets.js"></script -->
+	<script src="assets.js" type="text/javascript"/>
+  <!-- script src="00_handsontable.js"></script -->
+  <!-- link rel="stylesheet" media="screen" href="jquery_handsontable_full.css" -->
+
+</head>
+
+<body class="home">
+    <div id="example" class="hansontable"></div>
+
+    <script>
+      $(document).ready(function () {
+        var data = [
+          ["", "Maserati", "Mazda", "Mercedes", "Mini", "Mitsubishi"],
+          ["2009", 0, 2941, 4303, 354, 5814],
+          ["2010", 5, 2905, 2867, 412, 5284],
+          ["2011", 4, 2517, 4822, 552, 6127],
+          ["2012", 2, 2422, 5399, 776, 4151]
+        ];
+
+        $('#example').handsontable({
+          data: data,
+          minRows: 5,
+          minCols: 6,
+          minSpareRows: 1,
+          autoWrapRow: true,
+          colHeaders: true,
+          contextMenu: true
+        });
+
+        $('.ver').text($('#example').data('handsontable').version);
+      });
+    </script>
+
+</body>
+</html>
