@@ -1913,8 +1913,8 @@ Handsontable.Core = function (rootElement, settings) {
    */
   this.getColHeader = function (col, TH) {
     col = Handsontable.PluginModifiers.run(self, 'col', col);
-    var DIV  = document.createElement('DIV'),
-        SPAN = document.createElement('SPAN'),
+    var DIV  = document.createElement('div'),
+        SPAN = document.createElement('span'),
         avoidInnerHTML = self.view.wt.wtDom.avoidInnerHTML;
 
     DIV.className = 'relative';
@@ -2306,11 +2306,11 @@ Handsontable.TableView = function (instance) {
   instance.rootElement.data('originalStyle', instance.rootElement.attr('style')); //needed to retrieve original style in jsFiddle link generator in HT examples. may be removed in future versions
   instance.rootElement.addClass('handsontable');
 
-  var table = document.createElement('TABLE');
+  var table = document.createElement('table');
       table.className = 'htCore';
 
-      table.appendChild(document.createElement('THEAD'));
-      table.appendChild(document.createElement('TBODY'));
+      table.appendChild(document.createElement('thead'));
+      table.appendChild(document.createElement('tbody'));
 
   var $table = $(table);
 
@@ -2891,10 +2891,10 @@ Handsontable.TextRenderer = function (instance, TD, row, col, prop, value, cellP
  * @param {Object} cellProperties Cell properites (shared by cell renderer and editor)
  */
 Handsontable.AutocompleteRenderer = function (instance, TD, row, col, prop, value, cellProperties) {
-  var TEXT = document.createElement('DIV');
+  var TEXT = document.createElement('div');
   TEXT.className = 'htAutocomplete';
 
-  var ARROW = document.createElement('DIV');
+  var ARROW = document.createElement('div');
   ARROW.className = 'htAutocompleteArrow';
   ARROW.appendChild(document.createTextNode('\u25BC'));
   //this is faster than innerHTML. See: https://github.com/warpech/jquery-handsontable/wiki/JavaScript-&-DOM-performance-tips
@@ -2939,7 +2939,7 @@ Handsontable.CheckboxRenderer = function (instance, TD, row, col, prop, value, c
 
   instance.view.wt.wtDom.empty(TD); //TODO identify under what circumstances this line can be removed
 
-  var INPUT = document.createElement('INPUT');
+  var INPUT = document.createElement('input');
   INPUT.className = 'htCheckboxRendererInput';
   INPUT.type = 'checkbox';
   INPUT.setAttribute('autocomplete', 'off');
@@ -3013,14 +3013,14 @@ function HandsontableTextEditorClass(instance) {
 }
 
 HandsontableTextEditorClass.prototype.createElements = function () {
-  this.TEXTAREA = document.createElement('TEXTAREA');
+  this.TEXTAREA = document.createElement('textarea');
   this.TEXTAREA.className = 'handsontableInput';
   this.textareaStyle = this.TEXTAREA.style;
   this.textareaStyle.width = 0;
   this.textareaStyle.height = 0;
   this.$textarea = $(this.TEXTAREA);
 
-  this.TEXTAREA_PARENT = document.createElement('DIV');
+  this.TEXTAREA_PARENT = document.createElement('div');
   this.TEXTAREA_PARENT.className = 'handsontableInputHolder';
   this.textareaParentStyle = this.TEXTAREA_PARENT.style;
   this.textareaParentStyle.top = 0;
@@ -3603,7 +3603,7 @@ Handsontable.helper.inherit(HandsontableDateEditorClass, HandsontableTextEditorC
 HandsontableDateEditorClass.prototype.createElements = function () {
   HandsontableTextEditorClass.prototype.createElements.call(this);
 
-  this.datePicker = document.createElement('DIV');
+  this.datePicker = document.createElement('div');
   this.datePickerStyle = this.datePicker.style;
   this.datePickerStyle.position = 'absolute';
   this.datePickerStyle.top = 0;
@@ -3699,7 +3699,7 @@ Handsontable.helper.inherit(HandsontableHandsontableEditorClass, HandsontableTex
 HandsontableHandsontableEditorClass.prototype.createElements = function () {
   HandsontableTextEditorClass.prototype.createElements.call(this);
 
-  var DIV = document.createElement('DIV');
+  var DIV = document.createElement('div');
   DIV.className = 'handsontableEditor';
   this.TEXTAREA_PARENT.appendChild(DIV);
 
@@ -4327,7 +4327,7 @@ function HandsontableManualColumnMove() {
     , startX
     , startOffset;
 
-  var ghost = document.createElement('DIV')
+  var ghost = document.createElement('div')
     , ghostStyle = ghost.style;
 
   ghost.className = 'ghost';
@@ -4414,7 +4414,7 @@ function HandsontableManualColumnMove() {
 
   this.getColHeader = function (col, TH) {
     if (this.getSettings().manualColumnMove) {
-      var DIV = document.createElement('DIV');
+      var DIV = document.createElement('div');
       DIV.className = 'manualColumnMover';
       TH.firstChild.appendChild(DIV);
     }
@@ -4436,8 +4436,8 @@ function HandsontableManualColumnResize() {
     , startX
     , startWidth
     , startOffset
-    , resizer = document.createElement('DIV')
-    , line = document.createElement('DIV')
+    , resizer = document.createElement('div')
+    , line = document.createElement('div')
     , lineStyle = line.style;
 
   resizer.className = 'manualColumnResizer';
@@ -4515,7 +4515,7 @@ function HandsontableManualColumnResize() {
 
   this.getColHeader = function (col, TH) {
     if (this.getSettings().manualColumnResize) {
-      var DIV = document.createElement('DIV');
+      var DIV = document.createElement('div');
       DIV.className = 'manualColumnResizer';
       DIV.setAttribute('rel', col);
       TH.firstChild.appendChild(DIV);
@@ -4886,14 +4886,14 @@ function CopyPaste(listenerElement) {
     , style;
   listenerElement = listenerElement || document.body;
 
-  this.elDiv = document.createElement('DIV');
+  this.elDiv = document.createElement('div');
   style = this.elDiv.style;
   style.position = 'fixed';
   style.top = 0;
   style.left = 0;
   listenerElement.appendChild(this.elDiv);
 
-  this.elTextarea = document.createElement('TEXTAREA');
+  this.elTextarea = document.createElement('textarea');
   this.elTextarea.className = 'copyPaste';
   style = this.elTextarea.style;
   style.width = '1px';
@@ -5026,7 +5026,7 @@ function WalkontableBorder(instance, settings) {
   style.left = 0;
 
   for (var i = 0; i < 5; i++) {
-    var DIV = document.createElement('DIV');
+    var DIV = document.createElement('div');
     DIV.className = 'wtBorder ' + (settings.className || '');
     style = DIV.style;
     style.backgroundColor = settings.border.color;
@@ -5486,7 +5486,7 @@ WalkontableDom.prototype.removeTextNodes = function (elem, parent) {
   if (elem.nodeType === 3) {
     parent.removeChild(elem); //bye text nodes!
   }
-  else if (['TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR'].indexOf(elem.nodeName) > -1) {
+  else if (['table', 'thead', 'tbody', 'tfoot', 'tr'].indexOf(elem.nodeName) > -1) {
     var childs = elem.childNodes;
     for (var i = childs.length - 1; i >= 0; i--) {
       this.removeTextNodes(childs[i], elem);
@@ -5558,7 +5558,7 @@ function WalkontableEvent(instance) {
   var onMouseDown = function (event) {
     var cell = that.parentCell(event.target);
 
-    if (cell.TD && cell.TD.nodeName === 'TD') {
+    if (cell.TD && cell.TD.nodeName === 'td') {
       if (that.instance.hasSetting('onCellMouseDown')) {
         that.instance.getSetting('onCellMouseDown', event, cell.coords, cell.TD);
       }
@@ -5568,7 +5568,7 @@ function WalkontableEvent(instance) {
     }
 
     if (event.button !== 2) { //if not right mouse button
-      if (cell.TD && cell.TD.nodeName === 'TD') {
+      if (cell.TD && cell.TD.nodeName === 'td') {
         dblClickOrigin.shift();
         dblClickOrigin.push(cell.TD);
       }
@@ -5582,10 +5582,10 @@ function WalkontableEvent(instance) {
   var lastMouseOver;
   var onMouseOver = function (event) {
     if (that.instance.hasSetting('onCellMouseOver')) {
-      var TD = that.wtDom.closest(event.target, ['TD', 'TH']);
+      var TD = that.wtDom.closest(event.target, ['td', 'th']);
       if (TD && TD !== lastMouseOver) {
         lastMouseOver = TD;
-        if (TD.nodeName === 'TD') {
+        if (TD.nodeName === 'td') {
           that.instance.getSetting('onCellMouseOver', event, that.instance.wtTable.getCoords(TD), TD);
         }
       }
@@ -5596,7 +5596,7 @@ function WalkontableEvent(instance) {
     if (event.button !== 2) { //if not right mouse button
       var cell = that.parentCell(event.target);
 
-      if (cell.TD && cell.TD.nodeName === 'TD') {
+      if (cell.TD && cell.TD.nodeName === 'td') {
         dblClickOrigin.shift();
         dblClickOrigin.push(cell.TD);
       }
@@ -5634,7 +5634,7 @@ function WalkontableEvent(instance) {
 
 WalkontableEvent.prototype.parentCell = function (elem) {
   var cell = {};
-  cell.TD = this.wtDom.closest(elem, ['TD', 'TH']);
+  cell.TD = this.wtDom.closest(elem, ['td', 'th']);
   if (cell.TD) {
     cell.coords = this.instance.wtTable.getCoords(cell.TD);
   }
@@ -5718,7 +5718,7 @@ WalkontableScroll.prototype.scrollVertical = function (delta) {
     }
 
     var TD = this.instance.wtTable.TBODY.firstChild.firstChild;
-    if (TD.nodeName === 'TH') {
+    if (TD.nodeName === 'th') {
       TD = TD.nextSibling;
     }
     var cellOffset = this.instance.wtDom.offset(TD);
@@ -5771,7 +5771,7 @@ WalkontableScroll.prototype.scrollHorizontal = function (delta) {
     }
 
     var TD = this.instance.wtTable.TBODY.firstChild.firstChild;
-    if (TD.nodeName === 'TH') {
+    if (TD.nodeName === 'th') {
       TD = TD.nextSibling;
     }
     var cellOffset = this.instance.wtDom.offset(TD);
@@ -5869,7 +5869,7 @@ function WalkontableScrollbar(instance, type) {
   this.$table = $(this.instance.wtTable.TABLE);
 
   //create elements
-  this.slider = document.createElement('DIV');
+  this.slider = document.createElement('div');
   this.sliderStyle = this.slider.style;
   this.sliderStyle.position = 'absolute';
   this.sliderStyle.top = '0';
@@ -5877,7 +5877,7 @@ function WalkontableScrollbar(instance, type) {
   this.sliderStyle.display = 'none';
   this.slider.className = 'dragdealer ' + type;
 
-  this.handle = document.createElement('DIV');
+  this.handle = document.createElement('div');
   this.handleStyle = this.handle.style;
   this.handle.className = 'handle';
 
@@ -6428,7 +6428,7 @@ function WalkontableTable(instance) {
   //wtSpreader
   var parent = this.TABLE.parentNode;
   if (!parent || parent.nodeType !== 1 || !this.wtDom.hasClass(parent, 'wtHolder')) {
-    var spreader = document.createElement('DIV');
+    var spreader = document.createElement('div');
     if (this.instance.hasSetting('width') && this.instance.hasSetting('height')) {
       var spreaderStyle = spreader.style;
       spreaderStyle.position = 'absolute';
@@ -6448,7 +6448,7 @@ function WalkontableTable(instance) {
   //wtHider
   parent = this.spreader.parentNode;
   if (!parent || parent.nodeType !== 1 || !this.wtDom.hasClass(parent, 'wtHolder')) {
-    var hider = document.createElement('DIV');
+    var hider = document.createElement('div');
     hider.className = 'wtHider';
     if (parent) {
       parent.insertBefore(hider, this.spreader); //if TABLE is detached (e.g. in Jasmine test), it has no parentNode so we cannot attach holder to it
@@ -6462,7 +6462,7 @@ function WalkontableTable(instance) {
   //wtHolder
   parent = this.hider.parentNode;
   if (!parent || parent.nodeType !== 1 || !this.wtDom.hasClass(parent, 'wtHolder')) {
-    var holder = document.createElement('DIV');
+    var holder = document.createElement('div');
     holder.style.position = 'relative';
     holder.className = 'wtHolder';
     if (parent) {
@@ -6473,25 +6473,25 @@ function WalkontableTable(instance) {
   this.parent = this.hider.parentNode;
 
   //bootstrap from settings
-  this.TBODY = this.TABLE.getElementsByTagName('TBODY')[0];
+  this.TBODY = this.TABLE.getElementsByTagName('tbody')[0];
   if (!this.TBODY) {
-    this.TBODY = document.createElement('TBODY');
+    this.TBODY = document.createElement('tbody');
     this.TABLE.appendChild(this.TBODY);
   }
-  this.THEAD = this.TABLE.getElementsByTagName('THEAD')[0];
+  this.THEAD = this.TABLE.getElementsByTagName('thead')[0];
   if (!this.THEAD) {
-    this.THEAD = document.createElement('THEAD');
+    this.THEAD = document.createElement('thead');
     this.TABLE.insertBefore(this.THEAD, this.TBODY);
   }
-  this.COLGROUP = this.TABLE.getElementsByTagName('COLGROUP')[0];
+  this.COLGROUP = this.TABLE.getElementsByTagName('colgroup')[0];
   if (!this.COLGROUP) {
-    this.COLGROUP = document.createElement('COLGROUP');
+    this.COLGROUP = document.createElement('colgroup');
     this.TABLE.insertBefore(this.COLGROUP, this.THEAD);
   }
 
   if (this.instance.hasSetting('columnHeaders')) {
     if (!this.THEAD.childNodes.length) {
-      var TR = document.createElement('TR');
+      var TR = document.createElement('tr');
       this.THEAD.appendChild(TR);
     }
   }
@@ -6638,7 +6638,7 @@ WalkontableTable.prototype.adjustAvailableNodes = function () {
 
   //adjust COLGROUP
   while (this.colgroupChildrenLength < displayTds + frozenColumnsCount) {
-    this.COLGROUP.appendChild(document.createElement('COL'));
+    this.COLGROUP.appendChild(document.createElement('col'));
     this.colgroupChildrenLength++;
   }
   while (this.colgroupChildrenLength > displayTds + frozenColumnsCount) {
@@ -6649,7 +6649,7 @@ WalkontableTable.prototype.adjustAvailableNodes = function () {
   //adjust THEAD
   if (this.instance.hasSetting('columnHeaders')) {
     while (this.theadChildrenLength < displayTds + frozenColumnsCount) {
-      this.THEAD.firstChild.appendChild(document.createElement('TH'));
+      this.THEAD.firstChild.appendChild(document.createElement('th'));
       this.theadChildrenLength++;
     }
     while (this.theadChildrenLength > displayTds + frozenColumnsCount) {
@@ -6660,9 +6660,9 @@ WalkontableTable.prototype.adjustAvailableNodes = function () {
 
   //adjust TBODY
   while (this.tbodyChildrenLength < displayRows) {
-    TR = document.createElement('TR');
+    TR = document.createElement('tr');
     for (c = 0; c < frozenColumnsCount; c++) {
-      TR.appendChild(document.createElement('TH'));
+      TR.appendChild(document.createElement('th'));
     }
     this.TBODY.appendChild(TR);
     this.tbodyChildrenLength++;
@@ -6677,7 +6677,7 @@ WalkontableTable.prototype.adjustAvailableNodes = function () {
   for (var r = 0, rlen = TRs.length; r < rlen; r++) {
     trChildrenLength = TRs[r].childNodes.length;
     while (trChildrenLength < displayTds + frozenColumnsCount) {
-      var TD = document.createElement('TD');
+      var TD = document.createElement('td');
       TD.setAttribute('tabindex', 10000); //http://www.barryvan.com.au/2009/01/onfocus-and-onblur-for-divs-in-fx/; 32767 is max tabindex for IE7,8
       TRs[r].appendChild(TD);
       trChildrenLength++;

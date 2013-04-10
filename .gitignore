@@ -8,3 +8,4 @@ coverage
 attic
 test/.test
 Gemfile.lock
+doc/*

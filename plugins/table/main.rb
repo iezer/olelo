@@ -1,7 +1,4 @@
 description    'Table aspect'
-#dependencies   'tags', 'utils/assets', 'utils/xml'
-#export_scripts 'handsontable/*.css'
-#export_scripts 'handsontable/*.js'
 export_scripts 'handsontable/*.js', 'handsontable/*.css'
 
 Aspects::Aspect.create(:table, priority: 3, layout: true, cacheable: true, hidden: true) do
