@@ -9,3 +9,4 @@ attic
 test/.test
 Gemfile.lock
 doc/*
+wiki/log
