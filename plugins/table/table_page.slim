@@ -1,6 +1,7 @@
 div id="example"
 javascript:
   var page_content = eval('#{{@page.content.squeeze}}');
+
   $(document).ready(function () {
     var data = [
       ["", "Maserati", "Mazda", "Mercedes", "Mini", "Mitsubishi"],
@@ -10,7 +11,7 @@ javascript:
       ["2012", 2, 2422, 5399, 776, 4151]
     ];
 
-    $('#example').handsontable({
+    $("#example").handsontable({
       data: page_content,
       minRows: 5,
       minCols: 6,
@@ -20,6 +21,34 @@ javascript:
       contextMenu: true
     });
 
-    $('.ver').text($('#example').data('handsontable').version);
+    $('.ver').text($("#example").data('handsontable').version);
   });
-  
+
+	function JSON_to_str ( v ) {
+		v.pop();
+		s1 = JSON.stringify( v );
+		s2 = s1.replace (/null/g, "\" \"");
+		s3 = s2.replace (/\[/g, "[ ");
+		s4 = s3.replace (/\]/g, " ]");
+		return s4;
+	}
+
+  function getDataJSON() { 
+		var data = JSON_to_str( $("#example").handsontable('getData') );
+    document.editor.content.value = data;
+    console.log('data of ' + dump,  data);
+  }
+	
+  function formSubmit() { 
+		getDataJSON();
+		document.editor.submit();
+  }
+
+form name='editor' action=build_path(@page.new? ? nil : @page.path) method='post' onsubmit='formSubmit()'
+  textarea#edit-content.observe name='content' cols='100' rows='20'
+  button&submit name='action' value='edit' = :save.t onclick='formSubmit()'
+  button&submit name='action' value='edit-close' = :save_and_close.t onclick='formSubmit()'
+  button&reset = :reset.t
+  &hidden name='version' value=@page.version
+
+button onclick="getDataJSON()" Try it
