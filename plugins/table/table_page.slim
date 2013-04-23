@@ -2,28 +2,6 @@ div id="example"
 javascript:
   var page_content = eval('#{{@page.content.squeeze}}');
 
-  $(document).ready(function () {
-    var data = [
-      ["", "Maserati", "Mazda", "Mercedes", "Mini", "Mitsubishi"],
-      ["2009", 0, 2941, 4303, 354, 5814],
-      ["2010", 5, 2905, 2867, 412, 5284],
-      ["2011", 4, 2517, 4822, 552, 6127],
-      ["2012", 2, 2422, 5399, 776, 4151]
-    ];
-
-    $("#example").handsontable({
-      data: page_content,
-      minRows: 5,
-      minCols: 6,
-      minSpareRows: 1,
-      autoWrapRow: true,
-      colHeaders: true,
-      contextMenu: true
-    });
-
-    $('.ver').text($("#example").data('handsontable').version);
-  });
-
 	function JSON_to_str ( v ) {
 		v.pop();
 		s1 = JSON.stringify( v );
@@ -44,11 +22,43 @@ javascript:
 		document.editor.submit();
   }
 
+	function flipTextArea() {
+	  flag = document.editor.content.hidden;
+	  document.editor.content.hidden = ! flag;
+		document.getElementById("jsonbutton").innerHTML = flag ? "Hide JSON" : "Show JSON";
+		if (flag) {
+		  getDataJSON();	
+		}
+	}
+	
+  $(document).ready(function () {
+    var data = [
+      ["", "Maserati", "Mazda", "Mercedes", "Mini", "Mitsubishi"],
+      ["2009", 0, 2941, 4303, 354, 5814],
+      ["2010", 5, 2905, 2867, 412, 5284],
+      ["2011", 4, 2517, 4822, 552, 6127],
+      ["2012", 2, 2422, 5399, 776, 4151]
+    ];
+
+    $("#example").handsontable({
+      data: page_content,
+      minRows: 5,
+      minCols: 6,
+      minSpareRows: 1,
+      autoWrapRow: true,
+      colHeaders: true,
+      contextMenu: true,
+			onChange:getDataJSON
+    });
+
+    $('.ver').text($("#example").data('handsontable').version);
+  });
+
 form name='editor' action=build_path(@page.new? ? nil : @page.path) method='post' onsubmit='formSubmit()'
-  textarea#edit-content.observe name='content' cols='100' rows='20'
+  textarea#edit-content.observe name='content' cols='100' rows='20' hidden='true'
   button&submit name='action' value='edit' = :save.t onclick='formSubmit()'
   button&submit name='action' value='edit-close' = :save_and_close.t onclick='formSubmit()'
   button&reset = :reset.t
   &hidden name='version' value=@page.version
 
-button onclick="getDataJSON()" Try it
+button id='jsonbutton' onclick='flipTextArea()' Show JSON
