@@ -2,7 +2,6 @@
 *.swp
 .wiki
 .yardoc
-config.yml
 doc/api
 coverage
 attic

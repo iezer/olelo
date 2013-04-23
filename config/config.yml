@@ -1,0 +1,160 @@
+# config.yml.default
+# Default wiki configuration
+# Copy this file to config.yml if you want to tweak any settings.
+# Do not delete this file!
+
+##################################################
+# Main configuration
+
+# Wiki title displayed at the top of the page
+title:           'Ōlelo SOP'
+
+# Default locale
+# Examples: en, en_US, de_DE
+locale:          'en_US'
+
+# Set this to false to put the wiki to debugging mode.
+# Debugging mode disables caching and enables exception backtraces.
+production:      false
+
+# Page used for the sidebar. This can be a path.
+sidebar_page:    'Sidebar'
+
+# Use a different base directory as root to support installation in user homes
+# e.g. /wiki
+base_path:      '/'
+
+# Main cache store. Uncomment this!
+# Available caches: Memory, File, Memcached, PStore, ... (see juno gem)
+cache_store:
+  type:   HashFile
+  HashFile:
+    dir: './wiki/cache'
+#  Memcached:
+#    prefix: ''
+#    server: localhost:11211
+#  Memory:
+#  PStore:
+#    file: '/home/user/wiki/cache.pstore'
+
+# Default math renderer
+# Available renderers:
+#   * mathjax      - MathML, recommended, just works, but requires javascript
+#   * itex         - MathML, needs itex2MML executable on path
+#   * ritex        - MathML, needs ruby ritex gem
+#   * blahteximage - Image, needs blahtex executable on path
+#   * blahtexml    - MathML, recommended, needs blahtex executable on path
+#   * google       - Image, only short formulas, uses google charts api
+math_renderer:
+
+# Directory where the blahtex math renderer stores the images.
+# Uncomment this!
+blahtex_directory: './wiki/blahtex'
+
+# Selected theme
+theme: atlantis
+
+##################################################
+# Authentication backend configuration
+
+authentication:
+  # Enable signup
+  enable_signup: true
+
+  # Select a authentication service which is configured below.
+  # Currently supported are: yamlfile, portal and stack.
+  service:       yamlfile
+
+  # Configure the yamlfile backend.
+  # The yaml file backend stores the users in a simple yaml file.
+  # Uncomment this!
+
+  yamlfile:
+    store:       './wiki/users.yml'
+
+  # Configure the portal backend.
+  # The portal backend uses a REST-API to access user data.
+  # Uncomment this!
+
+  #portal:
+  #  url:         'http://portal.test.com/'
+
+  # Stack backend which accesses multiple backends in the following order.
+  stack:
+    - yamlfile
+    - portal
+
+##################################################
+# Mime detection order
+# Possible values are extension, content/magic and a specific mime type
+# You can configure the wiki default mime type here
+# and select the default wiki text this way.
+
+mime:
+  - extension
+  - content
+  # Use creole as last resort.
+  # You can configure the wiki default mime type here!
+  # Use text/x-creole for Creole Wikitext, text/x-markdown for Markdown,
+  # text/x-textile for Textile, text/x-orgmode for Emacs Org Mode
+  - application/xhtml+xml
+
+mime_suggestions:
+  - text/x-creole
+  - text/x-mediawiki
+  - text/x-markdown
+  - text/x-textile
+  - text/x-orgmode
+  - application/xml
+  - application/json
+  - application/xhtml+xml
+
+##################################################
+# List of disabled plugins by name.
+# You can disable whole plugin directories.
+
+disabled_plugins:
+  - security/readonly_wiki
+  - security/private_wiki
+  - editor/ace
+  - editor/recaptcha
+  - filters/remind
+  - tags/fortune
+#  - blog
+
+##################################################
+# Rack middleware configurations
+
+rack:
+  # Secret key used to verify session integrity. Use a random string here!
+  #session_secret: 'Change the secret! Use random string!'
+  # Use the deflater to compress data (Rack::Deflater)
+  deflater:      true
+
+##################################################
+# Logging configuration
+
+log:
+  level: DEBUG
+  file: './wiki/log'
+
+##################################################
+# Antispam configuration.
+# Specify recaptcha public/private key
+
+recaptcha:
+  #public:      public key
+  #private:     private key
+
+##################################################
+# Repository configuration
+
+repository:
+  # Specify type of repository
+  type:           git
+
+  # Configuration git repository type. Uncomment this!
+  # Path is to a bare (!) git repository.
+  #git:
+  #  path:        '/home/user/wiki/repository'
+  #  bare:        true
