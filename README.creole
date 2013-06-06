@@ -8,6 +8,12 @@
 Ōlelo is a wiki that stores pages in a [[http://git-scm.org/|Git]] repository, supports many markup styles and has an extensible, hackable architecture!
 If you want to see a demo installation go to http://www.gitwiki.org/.
 
+I forked this project because I wanted to add a couple of features. I wanted to add the ability to create grids and tables
+either within the wiki or as a separate document type. I've integrated www.handsontable.com into Olelo.
+
+In the future I also want to add the ability to branch wikis and have changes pushed and pulled among users. This would
+make Olelo more useful to large scale organizations and use cases that require change approval.
+
 == Features
 
 Ōlelo implements a plugin system. A lot of the features are implemented as plugins and can be activated or deactivated as you wish.
